@@ -1,7 +1,6 @@
 import { signOut } from "@/app/actions/auth";
 import { requireAdmin } from "@/lib/auth/authorization";
-
-export default async function AdminPage() {
-  const user = await requireAdmin();
-  return (<div className="me-admin"><header><strong className="me-header">LOXADA® MERCH</strong><form action={signOut}><button className="me-exit" type="submit">LOG OUT ↗</button></form></header><section><span className="me-tag">OPERATIONS / VERIFIED</span><h1>Good things<br/><span>in store.</span></h1><div className="me-box"><strong>Merchandise administrator</strong><p>Welcome, {user.email}. Your account has been authorized for the Merchandise admin workspace.</p><p>Store inventory and supplier operations will be built later.</p></div></section></div>);
+export default async function AdminPage(){
+ const user=await requireAdmin();
+ return <main className="me-site me-board"><header className="me-header"><b>LOXADA® <span>MERCH</span></b><small>INVENTORY & SUPPLY WORKSPACE</small><form action={signOut}><button type="submit" className="me-out">LOG OUT ↗</button></form></header><section className="me-dashboard"><div className="me-dash-head"><div><small>BACK OFFICE / STAFF VERIFIED</small><h1>LET'S MAKE<br/><em>THINGS HAPPEN.</em></h1><p>{user.email} · Merchandise administrator</p></div><div className="me-stamp">✓<small>ADMIN VERIFIED</small></div></div><div className="me-board-grid"><article><small>01 / PRODUCTS</small><div>▤</div><h2>Catalog</h2><p>Posters, prints and apparel workflows come later.</p></article><article><small>02 / SUPPLIERS</small><div>▥</div><h2>Supply desk</h2><p>Wholesalers and manufacturers will be managed here.</p></article><article><small>03 / SECURITY</small><div>✓</div><h2>Staff verified</h2><p>Server authentication and role checks are active.</p></article></div></section><footer className="me-foot">MERCHANDISE / SECURE ADMIN <span>LOXADA®</span></footer></main>;
 }

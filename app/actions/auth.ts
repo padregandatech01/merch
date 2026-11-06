@@ -8,15 +8,20 @@ const REQUIRED_ROLE = "dept_admin";
 export async function signIn(formData: FormData) {
   const email = formData.get("email");
   const password = formData.get("password");
-  if (typeof email !== "string" || typeof password !== "string" ||
-      !email.includes("@") || email.length > 254 || !password || password.length > 1024) {
+  const requestedIdentity = typeof email === "string" ? email.trim() : "";
+  // Alias resolves to a real Supabase Auth email. It grants no role or permission.
+  const actualEmail = requestedIdentity.toLowerCase() === "admin"
+    ? process.env.ADMIN_LOGIN_EMAIL
+    : requestedIdentity;
+  if (typeof actualEmail !== "string" || typeof password !== "string" ||
+      !actualEmail.includes("@") || actualEmail.length > 254 || !password || password.length > 1024) {
     redirect("/login?error=invalid");
   }
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
     redirect("/login?error=configuration");
   }
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+  const { error } = await supabase.auth.signInWithPassword({ email: actualEmail.trim(), password });
   if (error) redirect("/login?error=invalid");
   const { data: { user }, error: sessionError } = await supabase.auth.getUser();
   if (sessionError || !user || !user.email_confirmed_at) {

@@ -1,18 +1,16 @@
-# Merchandise — Loxada
+# Loxada — Merchandise
 
-## Current scope (2026-11-06)
-- A visually distinct staff login at `/login`.
-- Server-side Supabase email/password authentication.
-- Server-enforced RBAC protecting `/admin`. Only the **dept_admin** role can enter.
-- Logout action and session cookie refresh.
-- **No signup, password recovery, customer portal or supplier workflows yet.**
-- Site root redirects to `/login` (approved signed-in users are redirected to `/admin`).
-- Admin page is a protected placeholder, not an operational dashboard.
+## Staff access
+This application has a standalone login page at `/login` and an RBAC-protected page at `/admin`, with its own design. Signup is not available yet.
 
-## Permission model
-A trusted operator must separately provision an Auth user and assign that user's UUID in `public.staff_roles` with role `dept_admin`. Never authorize using browser fields, email spelling, or editable user metadata. The DB table has row-level security: authenticated users may SELECT only their own role; they cannot INSERT/UPDATE/DELETE. The server rechecks the verified Auth user and role before rendering admin content. Registration and account provisioning are deliberately outside this phase.
+The username `admin` is a server-side alias resolved using `ADMIN_LOGIN_EMAIL`; normal email login also works. **The alias itself does not give anyone admin access.** The password is verified by Supabase Auth and the server checks the authenticated user's own `public.staff_roles` entry for `dept_admin` before displaying admin content. Role assignment cannot be performed by web users.
 
-## Run
-Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in your environment (use `.env.example`; never commit secrets). Run `npm install`, `npm run dev`, `npm run build`.
+## Initial staff setup
+Do not deploy public admin accounts with `admin` as the password. For a real account, a trusted operator can run `node scripts/provision-admin.mjs` from a private terminal with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `ADMIN_LOGIN_EMAIL` environment variables. It generates a strong temporary password and creates an **unconfirmed** Supabase Auth user with the staff role. Confirm email ownership using your Supabase Auth dashboard, then change the temporary password. This script is not a web endpoint and must never be executed with secrets in client-side code or CI logs.
 
-Source-only or deployment-ready checks do not prove real user login; no staff accounts were seeded or end-to-end sign-in tested.
+Set `ADMIN_LOGIN_EMAIL` as a server-side environment variable on Vercel to enable the `admin` alias. Without it, the real email can be used directly.
+
+## Running locally
+Copy `.env.example` into `.env.local` and configure your own Supabase URL/publishable key. Use `npm install`, `npm run dev`, `npm run build`.
+
+No real staff account is created by deploying repository code. Authentication, role checks, and UI must be tested using a separately provisioned staff account.
