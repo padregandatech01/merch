@@ -1,13 +1,18 @@
-# Loxada — Merchandise
+# Merchandise — Loxada
 
-**Clean slate (6 November 2026).** This is the Merchandise application repository. It has a blank Next.js home page, with no registration, login, password reset, protected demo, supplier portals, or other active business features.
+## Current scope (2026-11-06)
+- A visually distinct staff login at `/login`.
+- Server-side Supabase email/password authentication.
+- Server-enforced RBAC protecting `/admin`. Only the **dept_admin** role can enter.
+- Logout action and session cookie refresh.
+- **No signup, password recovery, customer portal or supplier workflows yet.**
+- Site root redirects to `/login` (approved signed-in users are redirected to `/admin`).
+- Admin page is a protected placeholder, not an operational dashboard.
 
-Existing Next.js, Tailwind CSS, TypeScript, Vercel setup and Supabase browser/server client helpers are retained for future implementation. The Supabase environment variable names stay unchanged. No Supabase database, Auth users, project settings, or Vercel configuration was changed by this source cleanup.
+## Permission model
+A trusted operator must separately provision an Auth user and assign that user's UUID in `public.staff_roles` with role `dept_admin`. Never authorize using browser fields, email spelling, or editable user metadata. The DB table has row-level security: authenticated users may SELECT only their own role; they cannot INSERT/UPDATE/DELETE. The server rechecks the verified Auth user and role before rendering admin content. Registration and account provisioning are deliberately outside this phase.
 
-## Start locally
+## Run
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in your environment (use `.env.example`; never commit secrets). Run `npm install`, `npm run dev`, `npm run build`.
 
-1. Copy `.env.example` to `.env.local` and set this application's own Supabase URL and publishable key (do not commit credentials).
-2. Run `npm install` and `npm run dev`.
-3. Build with `npm run build`.
-
-**No sign-in or signup is available yet.** Registration/login will be designed and implemented separately later. Do not restore template authentication or infer supplier permissions from this placeholder.
+Source-only or deployment-ready checks do not prove real user login; no staff accounts were seeded or end-to-end sign-in tested.
