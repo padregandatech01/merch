@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { selfSignupTypes } from "@/lib/portal/config";
 
 function validEmail(email: string) {
- return email.length <= 254 && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email);
+ return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 function configured() {
  return !!process.env.NEXT_PUBLIC_SUPABASE_URL && !!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
@@ -45,7 +45,7 @@ export async function register(formData: FormData) {
     password!==confirmation) redirect("/register?error=invalid");
  if (!configured()) redirect("/register?error=configuration");
  const db=await createClient();
- const origin=process.env.APP_ORIGIN?.replace(/\\/$/,"");
+ const origin=process.env.APP_ORIGIN?.replace(/\/$/,"");
  const {data,error}=await db.auth.signUp({
    email,password,
    options:{
