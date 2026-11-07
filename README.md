@@ -1,16 +1,30 @@
 # Loxada — Merchandise
 
-## Staff access
-This application has a standalone login page at `/login` and an RBAC-protected page at `/admin`, with its own design. Signup is not available yet.
+## Department-local accounts (V1)
+- Public self-registration: Buyer. A valid confirmed email is required for login.
+- Admin-initiated invitation only: Wholesaler, Manufacturer.
+- Supplier creation is minimal; the supplier completes an application inside `/portal`, and the department administrator reviews it at `/admin/accounts`.
+- Verified supplier application does **not** grant legal rights, publishing permission, purchasing authority, or access to protected staff/admin screens.
+- No cross-department customer identity graph or role assignment from user-editable metadata. Department data and credentials are isolated.
 
-The username `admin` is a server-side alias resolved using `ADMIN_LOGIN_EMAIL`; normal email login also works. **The alias itself does not give anyone admin access.** The password is verified by Supabase Auth and the server checks the authenticated user's own `public.staff_roles` entry for `dept_admin` before displaying admin content. Role assignment cannot be performed by web users.
+## Existing staff login preserved
+`/login` is universal for staff and customers. Only trusted, server-provisioned `public.staff_roles.role = 'dept_admin'` grants `/admin`.
+`admin` remains an alias for the server-side `ADMIN_LOGIN_EMAIL` and is not a security credential.
+The existing `scripts/provision-admin.mjs` workflow remains server-only.
 
-## Initial staff setup
-Do not deploy public admin accounts with `admin` as the password. For a real account, a trusted operator can run `node scripts/provision-admin.mjs` from a private terminal with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `ADMIN_LOGIN_EMAIL` environment variables. It generates a strong temporary password and creates an **unconfirmed** Supabase Auth user with the staff role. Confirm email ownership using your Supabase Auth dashboard, then change the temporary password. This script is not a web endpoint and must never be executed with secrets in client-side code or CI logs.
+## Environment and auth provider setup
+Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` for department Supabase.
+Set server-only `SUPABASE_SECRET_KEY` for authenticated admin invitation/review actions; **never** expose it with `NEXT_PUBLIC_`.
+Set `APP_ORIGIN` to the canonical deployed origin (HTTPS, e.g. `https://your-domain.example`).
+In Supabase Auth configure email confirmation and permitted redirects for `APP_ORIGIN/auth/confirm` and `APP_ORIGIN/set-password`.
+If using email templates with a token hash, route them through `/auth/confirm?token_hash=...&type=...&next=/portal` (or `next=/set-password` for invitations); the handler also accepts PKCE `code` callbacks.
+Invitation delivery depends on a working Supabase Auth email sender/provider configuration. Use a configured SMTP sender for production.
 
-Set `ADMIN_LOGIN_EMAIL` as a server-side environment variable on Vercel to enable the `admin` alias. Without it, the real email can be used directly.
+## Database
+The database migration `v1_portal_registration_onboarding` adds `portal_accounts` and `supplier_applications` with RLS, and a limited Auth-created-account trigger.
+The trigger never writes `staff_roles`. For Manga, only `creator` is a public supplier *applicant* classification; privileged supplier types are assigned only after an admin initiates an invite.
+The migration was applied to this department's Supabase project on 2026-11-07.
 
-## Running locally
-Copy `.env.example` into `.env.local` and configure your own Supabase URL/publishable key. Use `npm install`, `npm run dev`, `npm run build`.
-
-No real staff account is created by deploying repository code. Authentication, role checks, and UI must be tested using a separately provisioned staff account.
+## Run and check
+Use `npm install`, `npm run lint`, `npm run build`, and test email confirmation, login routing, supplier review and invitation acceptance with real test addresses.
+There are no placeholder subscriber payments, retail orders, or manuscript publications.

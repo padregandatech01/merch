@@ -1,0 +1,18 @@
+export const departmentId = "merch";
+export const departmentName = "Merchandise";
+export const customerType = "buyer";
+export const selfSignupTypes: readonly string[] = ["buyer"];
+export const invitationTypes: readonly string[] = ["wholesaler","manufacturer"];
+export const supplierTypes: readonly string[] = ["wholesaler","manufacturer"];
+export const accountLabels: Record<string, string> = {
+  "reader": "Reader",
+  "creator": "Author / Creator",
+  "publisher": "Publisher",
+  "subscriber": "Subscriber",
+  "licensor": "Licensor / Distributor",
+  "prime_producer": "Prime Producer",
+  "buyer": "Buyer",
+  "wholesaler": "Wholesaler",
+  "manufacturer": "Manufacturer"
+};
+export function isSupplier(type: string) { return supplierTypes.includes(type); }
