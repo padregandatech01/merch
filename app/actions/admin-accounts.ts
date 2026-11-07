@@ -28,10 +28,10 @@ export async function inviteSupplier(form:FormData) {
   data:{display_name:displayName},redirectTo:inviteUrl
  });
  if(error || !data.user) redirect("/admin/accounts?error=invite");
- const {error:profileError}=await admin.from("portal_accounts").update({
+ const {data:profile,error:profileError}=await admin.from("portal_accounts").update({
   account_type:accountType,display_name:displayName
- }).eq("user_id",data.user.id);
- if(profileError) redirect("/admin/accounts?error=profile");
+ }).eq("user_id",data.user.id).select("user_id").single();
+ if(profileError || !profile) redirect("/admin/accounts?error=profile");
  redirect("/admin/accounts?notice=invited");
 }
 export async function reviewSupplier(form:FormData) {
@@ -44,9 +44,9 @@ export async function reviewSupplier(form:FormData) {
    (status!=="verified" && feedback.length<5)) redirect("/admin/accounts?error=invalid");
  const admin=service();
  if(!admin) redirect("/admin/accounts?error=configuration");
- const {error}=await admin.from("supplier_applications")
+ const {data:reviewed,error}=await admin.from("supplier_applications")
   .update({status,reviewer_feedback:feedback||null,reviewed_at:new Date().toISOString()})
-  .eq("id",id);
- if(error) redirect("/admin/accounts?error=database");
+  .eq("id",id).select("id").single();
+ if(error || !reviewed) redirect("/admin/accounts?error=database");
  redirect("/admin/accounts?notice=reviewed");
 }
