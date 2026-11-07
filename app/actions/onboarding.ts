@@ -20,7 +20,7 @@ export async function submitSupplierApplication(form:FormData) {
  if(lookupError) redirect("/portal?error=database");
  if(current && current.status!=="needs_info") redirect("/portal?error=locked");
  const result=current
-  ? await db.from("supplier_applications").update(values).eq("user_id",user.id).eq("status","needs_info")
+  ? await db.from("supplier_applications").update({...values,status:"pending"}).eq("user_id",user.id).eq("status","needs_info")
   : await db.from("supplier_applications").insert({...values,user_id:user.id});
  if(result.error) redirect("/portal?error=database");
  redirect("/portal?notice=submitted");
