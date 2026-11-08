@@ -21,6 +21,9 @@ export default async function InvitePartner({searchParams}:{searchParams:Promise
      <option value="" disabled>Choose a category</option>
      {invitationTypes.map(t=><option key={t} value={t}>{accountLabels[t]??t}</option>)}
     </select></label>
+    <label>Initial sourcing message<textarea name="message" rows={6} minLength={40} maxLength={3000} required
+     placeholder="Introduce the store, explain the wholesale or manufacturing opportunity, and invite a response."/></label>
+    <p className="sr-note">This becomes the first private message. The Supabase invitation email template determines whether the message also appears in email.</p>
     <SubmitButton label="Send invitation" pendingLabel="Sending invitation..."/>
    </form>
   </section>

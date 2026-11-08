@@ -6,7 +6,7 @@ export default async function MerchandiseLayout({children}:{children:React.React
  const user=await requireAdmin();
  const username=user.email?.split("@")[0]??"Staff";
  return <div className="me-app">
-   <aside className="me-app-nav"><div className="me-app-brand">LOXADA <span>MERCH</span></div><nav aria-label="Merchandise navigation"><SectionLinks items={[{href:"/admin",label:"Store overview"},{href:"/admin/accounts",label:"Buyer & supplier accounts"},{href:"/admin/onboarding",label:"Supplier onboarding"}]}/></nav></aside>
+   <aside className="me-app-nav"><div className="me-app-brand">LOXADA <span>MERCH</span></div><nav aria-label="Merchandise navigation"><SectionLinks items={[{href:"/admin",label:"Store overview"},{href:"/admin/accounts",label:"Buyer & supplier accounts"},{href:"/admin/onboarding",label:"Supplier onboarding"},{href:"/admin/relations",label:"Supplier relations"}]}/></nav></aside>
    <div className="me-app-body"><header className="me-account-head"><div className="me-account-name"><b title={user.email}>{username}</b><span>Department Admin</span></div><form action={signOut}><button type="submit">Log out</button></form></header>{children}</div>
  </div>;
 }
