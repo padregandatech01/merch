@@ -72,7 +72,7 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
       <Link className="store-link" href={"/admin/accounts/"+req.user_id}>View supplier account</Link>
       <form className="store-task-form" action={reviewSupplier}>
        <input type="hidden" name="application_id" value={req.id}/>
-       <label>Decision<select name="status" defaultValue="needs_info">
+       <label>Decision<select name="status" defaultValue="" required><option value="" disabled>Choose a decision</option>
         <option value="verified">Verify supplier</option><option value="needs_info">Ask for details</option>
         <option value="rejected">Decline application</option><option value="suspended">Suspend application</option>
        </select></label>
