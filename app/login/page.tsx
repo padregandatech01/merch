@@ -2,7 +2,7 @@ import Link from "next/link";
 import {signIn} from "@/app/actions/auth";
 import {redirectSignedIn} from "@/lib/auth/authorization";
 import PasswordField from "./password-field";
-const messages:Record<string,string>={invalid:"Incorrect email or password.",unconfirmed:"Verify your email before signing in.",unauthorized:"This account is not authorized for this department.",configuration:"Authentication is not configured.","invalid-link":"The verification link is invalid or expired."};
+const messages:Record<string,string>={invalid:"Incorrect email or password.",unconfirmed:"Verify your email before signing in.",suspended:"This account has been suspended. Contact the department administrator.",unauthorized:"This account is not authorized for this department.",configuration:"Authentication is not configured.","invalid-link":"The verification link is invalid or expired."};
 export default async function Login({searchParams}:{searchParams:Promise<{error?:string;notice?:string}>}) {
  await redirectSignedIn();
  const p=await searchParams;
