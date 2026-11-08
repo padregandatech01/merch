@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./portal-styles.css";
+import "./store-accounts.css";
 export const metadata:Metadata={
  title:"Loxada | Merchandise",
  description:"Merchandise department account portal",
