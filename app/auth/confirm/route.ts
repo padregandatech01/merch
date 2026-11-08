@@ -6,14 +6,15 @@ export async function GET(request:NextRequest) {
  const code=url.searchParams.get("code");
  const token_hash=url.searchParams.get("token_hash");
  const type=url.searchParams.get("type");
- const next=url.searchParams.get("next")==="/set-password"?"/set-password":"/portal";
+ const requestedNext=url.searchParams.get("next");
+ const next=requestedNext==="/set-password"||requestedNext==="/invitation"?requestedNext:"/portal";
  let success=false;
  if(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) {
   const db=await createClient();
   if(code) {
    const {error}=await db.auth.exchangeCodeForSession(code);
    success=!error;
-  } else if(token_hash && type && ["invite","signup","recovery","email"].includes(type)) {
+  } else if(token_hash && type && ["invite","signup","recovery","email","email_change"].includes(type)) {
    const {error}=await db.auth.verifyOtp({token_hash,type:type as EmailOtpType});
    success=!error;
   }
