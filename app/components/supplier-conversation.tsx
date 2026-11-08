@@ -1,4 +1,5 @@
 import Link from "next/link";
+import RefreshMessages from "@/app/components/refresh-messages";
 import SubmitButton from "@/app/admin/components/submit-button";
 import {markRelationshipRead,sendRelationshipMessage} from "@/app/actions/supplier-relationships";
 import type {Relationship,RelationMessage} from "@/lib/supplier-relations";
@@ -13,6 +14,7 @@ export default function SupplierConversation({relation,thread,viewer,baseUrl}:{
   new Date(relation.last_message_at).getTime()>new Date((viewer==="admin"?relation.admin_read_at:relation.supplier_read_at)!).getTime());
  return <section className="sr-card sr-conversation">
   <div className="sr-section-heading"><div><h2>Conversation</h2><p>Private messages between this supplier and the department team.</p></div>
+   <RefreshMessages/>
    {unread&&<form action={markRelationshipRead}><input type="hidden" name="relationship_id" value={relation.id}/>
     <SubmitButton label="Mark as read" pendingLabel="Updating..."/></form>}
   </div>
