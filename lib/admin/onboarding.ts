@@ -10,6 +10,7 @@ export type OnboardingQueue={
  q:string;status:string;page:number;pages:number;total:number;pending:number;
  requests:PartnerRequest[];error:string|null
 };
+const PAGE_SIZE=10;
 const allowed=["all","action","pending","needs_info","verified","rejected","suspended"];
 export function onboardingUrl(d:Pick<OnboardingQueue,"q"|"status">,page:number){
  const p=new URLSearchParams();
@@ -33,11 +34,11 @@ export async function loadOnboarding(params:Record<string,string|undefined>):Pro
  if(status==="action")query=query.in("status",["pending","needs_info"]);
  else if(status!=="all")query=query.eq("status",status);
  const [list,queueCount]=await Promise.all([
-  query.range((page-1)*15,page*15-1),
+  query.range((page-1)*PAGE_SIZE,page*PAGE_SIZE-1),
   db.from("supplier_applications").select("id",{count:"exact",head:true}).in("status",["pending","needs_info"])
  ]);
  const total=list.count??0;
- return {q,status,page,pages:Math.max(1,Math.ceil(total/15)),total,pending:queueCount.count??0,
+ return {q,status,page,pages:Math.max(1,Math.ceil(total/PAGE_SIZE)),total,pending:queueCount.count??0,
   requests:(list.data??[]) as PartnerRequest[],
   error:list.error||queueCount.error?"Some applications could not be loaded.":null};
 }

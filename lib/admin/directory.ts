@@ -17,6 +17,7 @@ export function directoryUrl(data:Pick<Directory,"q"|"role"|"status">,page:numbe
  if(page!==1)params.set("page",String(page));
  return "/admin/accounts"+(params.size?"?"+params.toString():"");
 }
+const PAGE_SIZE=12;
 export async function loadDirectory(params:Record<string,string|undefined>):Promise<Directory>{
  await requireAdmin();
  const q=String(params.q??"").trim().replace(/[%_,]/g,"").slice(0,60);
@@ -38,8 +39,8 @@ export async function loadDirectory(params:Record<string,string|undefined>):Prom
  if(q)query=query.ilike("display_name","%"+q+"%");
  if(role!=="all")query=query.eq("account_type",role);
  if(status!=="all")query=query.eq("status",status);
- const {data,error,count}=await query.range((page-1)*20,page*20-1);
+ const {data,error,count}=await query.range((page-1)*PAGE_SIZE,page*PAGE_SIZE-1);
  const total=count??0;
- return {q,role,status,page,total,pages:Math.max(1,Math.ceil(total/20)),
+ return {q,role,status,page,total,pages:Math.max(1,Math.ceil(total/PAGE_SIZE)),
   people:(data??[]) as PortalPerson[],error:error?"Account records could not be loaded.":null};
 }
