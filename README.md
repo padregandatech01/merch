@@ -28,3 +28,6 @@ The migration was applied to this department's Supabase project on 2026-11-07.
 ## Run and check
 Use `npm install`, `npm run lint`, `npm run build`, and test email confirmation, login routing, supplier review and invitation acceptance with real test addresses.
 There are no placeholder subscriber payments, retail orders, or manuscript publications.
+
+## Department account management
+Department administrators can search/filter portal accounts, edit display names, suspend/reactivate with an audit trail, and send email recovery requests at /admin/accounts. Staff roles are separate and never granted through these controls. Portal suspension is enforced in login and supplier RLS. Email recovery requires configured Supabase email delivery and allowed redirect URLs.

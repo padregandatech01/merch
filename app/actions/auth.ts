@@ -27,10 +27,14 @@ export async function signIn(formData: FormData) {
  }
  const {data:staff,error:staffError} = await db.from("staff_roles").select("role").eq("user_id",user.id).maybeSingle();
  if (!staffError && staff?.role === "dept_admin") redirect("/admin");
- const {data:account,error:accountError} = await db.from("portal_accounts").select("account_type").eq("user_id",user.id).maybeSingle();
+ const {data:account,error:accountError} = await db.from("portal_accounts").select("account_type,status").eq("user_id",user.id).maybeSingle();
  if (accountError || !account) {
    await db.auth.signOut();
    redirect("/login?error=unauthorized");
+ }
+ if(account.status!=="active") {
+  await db.auth.signOut();
+  redirect("/login?error=suspended");
  }
  redirect("/portal");
 }

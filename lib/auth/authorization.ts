@@ -20,8 +20,9 @@ export async function requirePortal() {
  const {data:staff}=await db.from("staff_roles").select("role").eq("user_id",user.id).maybeSingle();
  if(staff?.role==="dept_admin") redirect("/admin");
  const {data:account,error:accountError}=await db.from("portal_accounts")
- .select("user_id,account_type,display_name").eq("user_id",user.id).maybeSingle();
+ .select("user_id,account_type,display_name,status").eq("user_id",user.id).maybeSingle();
  if(accountError || !account) redirect("/login?error=unauthorized");
+ if(account.status!=="active") redirect("/login?error=suspended");
  return {user,account,db};
 }
 export async function redirectSignedIn() {
@@ -31,6 +32,6 @@ export async function redirectSignedIn() {
  if(!user?.email_confirmed_at) return;
  const {data:staff}=await db.from("staff_roles").select("role").eq("user_id",user.id).maybeSingle();
  if(staff?.role==="dept_admin") redirect("/admin");
- const {data:account}=await db.from("portal_accounts").select("user_id").eq("user_id",user.id).maybeSingle();
- if(account) redirect("/portal");
+ const {data:account}=await db.from("portal_accounts").select("user_id,status").eq("user_id",user.id).maybeSingle();
+ if(account?.status==="active") redirect("/portal");
 }
