@@ -1,3 +1,4 @@
+import SubmitButton from "@/app/admin/components/submit-button";
 import Form from "next/form";
 import Link from "next/link";
 import {loadDirectory,directoryUrl} from "@/lib/admin/directory";
@@ -27,7 +28,7 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
      <label>Account access<select name="status" defaultValue={d.status}>
       <option value="all">All accounts</option><option value="active">Can sign in</option><option value="suspended">Suspended</option>
      </select></label>
-     <button type="submit">Search</button>
+     <SubmitButton label="Search" pendingLabel="Searching..."/>
     </Form>
     <div className="store-table-scroll"><table className="store-table">
      <thead><tr><th>Account name</th><th>Group</th><th>Sign-in</th><th>Joined</th><th></th></tr></thead>

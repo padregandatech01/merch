@@ -1,3 +1,4 @@
+import SubmitButton from "@/app/admin/components/submit-button";
 import Link from "next/link";
 import Form from "next/form";
 import {loadOnboarding,onboardingUrl} from "@/lib/admin/onboarding";
@@ -28,7 +29,7 @@ export default async function OnboardingQueue({searchParams}:{searchParams:Promi
      <option value="rejected">Declined</option>
      <option value="suspended">Suspended applications</option>
     </select></label>
-    <button type="submit">Apply</button>
+    <SubmitButton label="Apply" pendingLabel="Updating..."/>
    </Form>
    <div className="admin-work-queue">
     {d.requests.map(req=><article key={req.id} className="admin-work-request">
