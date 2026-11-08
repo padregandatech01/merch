@@ -33,7 +33,7 @@ export default async function StoreAccount({params,searchParams}:{params:Promise
       <p>{application.legal_name} · {decisions[application.status]??application.status}</p>
       {application.reviewer_feedback&&<p>Review notes: {application.reviewer_feedback}</p>}
       <p className="store-muted">Supplier verification does not approve an item for sale or authorize purchase orders.</p>
-      <Link className="store-link" href="/admin/accounts">Review supplier applications</Link>
+      <Link className="store-link" href="/admin/onboarding">Review supplier applications</Link>
      </section>}
     <section className="store-subsection"><h2>Account change history</h2>
      {!history.length&&<p className="store-muted">No changes recorded.</p>}
