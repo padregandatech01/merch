@@ -1,0 +1,36 @@
+
+/* Route-level loading placeholders; app shell remains mounted between sections. */
+.admin-work-loading{width:100%;max-width:1280px;min-height:230px;margin:0 auto;padding:clamp(20px,3vw,38px)}
+.admin-loading-line{background:currentColor;opacity:.12;height:14px;width:32%;border-radius:5px;margin-bottom:14px;animation:admin-pulse 1.4s ease-in-out infinite}
+.admin-loading-line.wide{width:56%;height:32px}
+.admin-loading-panel{background:color-mix(in srgb,currentColor 4%,transparent);border:1px solid color-mix(in srgb,currentColor 13%,transparent);border-radius:12px;padding:24px;margin-top:25px}
+.admin-loading-row{display:flex;gap:18px;border-bottom:1px solid color-mix(in srgb,currentColor 10%,transparent);padding:16px 0}
+.admin-loading-row span{display:block;background:currentColor;opacity:.09;border-radius:4px;height:12px;flex:1}
+.admin-loading-row span:first-child{flex:1.5}
+@keyframes admin-pulse{50%{opacity:.05}}
+@media(prefers-reduced-motion:reduce){.admin-loading-line{animation:none}}
+/* Each account-list view spans available width, without empty onboarding rail. */
+.ink-account-only,.an-account-only,.store-account-only{grid-template-columns:minmax(0,1fr)!important}
+.ink-account-only .ink-register,.an-account-only .an-people-stage,.store-account-only .store-list-card{width:100%}
+.mn-sidebar nav a[aria-current="page"],.an-app-nav a[aria-current="page"],.me-app-nav nav a[aria-current="page"]{text-decoration:underline;text-underline-offset:5px;font-weight:800}
+.admin-work-header{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.admin-work-header a{white-space:nowrap}
+.admin-work-queue{display:grid;gap:12px}
+.admin-work-request{display:flex;gap:12px;justify-content:space-between;align-items:center;border-bottom:1px solid color-mix(in srgb,currentColor 18%,transparent);padding:15px 0}
+.admin-work-request>div{min-width:0}
+.admin-work-request strong,.admin-work-request small{display:block;overflow-wrap:anywhere}
+.admin-work-request small{font-size:12px;opacity:.75;margin-top:5px}
+.admin-work-request a{white-space:nowrap;text-decoration:underline;text-underline-offset:3px;font-weight:700;font-size:13px}
+.admin-work-filter{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin:16px 0}
+.admin-work-filter label{min-width:160px;flex:1}
+.admin-work-filter button{align-self:end}
+.admin-work-detail{max-width:850px}
+.admin-work-detail p{overflow-wrap:anywhere;line-height:1.65;white-space:pre-wrap}
+.admin-work-review{display:grid;gap:15px;margin-top:20px}
+.admin-work-review button{justify-self:start}
+.admin-work-review label{display:grid;gap:7px}
+.admin-work-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:16px 0}
+.admin-work-facts>*{min-width:0}
+.admin-work-actions{display:flex;justify-content:space-between;gap:12px;margin:15px 0}
+.admin-work-actions a{text-decoration:underline;text-underline-offset:3px;font-size:13px;font-weight:700}
+@media(max-width:650px){.admin-work-request{align-items:start;flex-direction:column}.admin-work-facts{grid-template-columns:1fr}.admin-work-filter{display:grid}.admin-work-filter label{min-width:0}}
