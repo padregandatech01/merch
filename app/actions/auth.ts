@@ -1,7 +1,7 @@
 "use server";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { selfSignupTypes } from "@/lib/portal/config";
+import { selfSignupTypes,invitationTypes } from "@/lib/portal/config";
 
 function validEmail(email: string) {
  return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -35,6 +35,10 @@ export async function signIn(formData: FormData) {
  if(account.status!=="active") {
   await db.auth.signOut();
   redirect("/login?error=suspended");
+ }
+ if(invitationTypes.includes(account.account_type)) {
+  const {data:relation}=await db.from("supplier_relationships").select("status").eq("user_id",user.id).maybeSingle();
+  if(relation?.status!=="completed")redirect("/invitation");
  }
  redirect("/portal");
 }

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {signOut} from "@/app/actions/auth";
 import {submitSupplierApplication} from "@/app/actions/onboarding";
 import {requirePortal} from "@/lib/auth/authorization";
@@ -17,6 +18,7 @@ export default async function StorePortal({searchParams}:{searchParams:Promise<{
  return <main className="store-portal"><div className="store-portal-wrap">
   <header className="store-portal-head"><strong>LOXADA / MERCH</strong><form action={signOut}><button type="submit">Sign out</button></form></header>
   <section className="store-portal-heading">
+   {supplier&&<Link className="sr-portal-message-link" href="/portal/messages">Messages with the store team</Link>}
    <span className="store-label">{supplier?"SUPPLIER ACCOUNT":"BUYER ACCOUNT"}</span>
    <h1>{supplier?"Supplier details":"Your store account"}</h1>
    <p>{supplier?"Complete your company details for the store team to review. Supplier verification does not approve any product listing or purchase order.":"Welcome to your buyer profile. Your account is separate from Anime subscribers and Manga readers. Shopping and delivery features will appear when the store is available."}</p>

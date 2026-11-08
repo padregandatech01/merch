@@ -25,7 +25,9 @@ export default function SetPassword() {
   const {error}=await db.auth.updateUser({password});
   setSaving(false);
   if(error){setMessage("Could not set password. Open the latest invitation link and try again.");return;}
-  router.replace("/portal");
+  const {data:{user}}=await db.auth.getUser();
+  const {data:relation}=user?await db.from("supplier_relationships").select("status").eq("user_id",user.id).maybeSingle():{data:null};
+  router.replace(relation?.status&&relation.status!=="completed"?"/invitation":"/portal");
  }
  return <main className="portal-screen" data-brand={departmentId}><div className="portal-card portal-form-card">
   <span className="portal-eyebrow">LOXADA / {departmentName}</span><h1>Set password</h1>
