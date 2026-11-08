@@ -12,7 +12,7 @@ export const accountLabels: Record<string, string> = {
   "licensor": "Licensor / Distributor",
   "prime_producer": "Prime Producer",
   "buyer": "Buyer",
-  "wholesaler": "Wholesaler",
-  "manufacturer": "Manufacturer"
+  "wholesaler": "Wholesale supplier",
+  "manufacturer": "Lead manufacturer"
 };
 export function isSupplier(type: string) { return supplierTypes.includes(type); }
