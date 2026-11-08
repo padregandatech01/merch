@@ -39,3 +39,11 @@ Department administrators can search/filter portal accounts, edit display names,
 - Supplier verification does not approve product authenticity, stock receipt, purchase orders, or customer-facing listings.
 - Buyer registration does not create a payment, order, cart, or shipping address.
 - Account management, buyer signup and supplier applications have independent Merchandise-specific interfaces.
+
+## Admin workspace navigation (V1)
+- **Accounts** (/admin/accounts): search, filter, paginate, inspect, suspend/reactivate, edit a display name, or send password recovery. The account loader does **not** read supplier applications.
+- **Partner onboarding** (/admin/onboarding): its own paginated application review queue, with separate routes for individual application decisions (/admin/onboarding/[applicationId]) and business invitations (/admin/onboarding/invite).
+- Client transitions use Next.js Link and Form; route loading placeholders let the persistent admin shell remain visible. Search actions give pending feedback.
+- Department administrator authorization remains enforced on all server reads and mutations. Applicant verification never grants staff privileges, business rights, product listings, publishing permission or streaming rights.
+- Manual acceptance: use browser DevTools Network with Preserve log enabled to confirm in-app navigation does not request a new Document, check browser Back/Forward and 375px/split-screen layouts, test pagination on both sections, verify 401/redirect for signed-out users and ensure supplier review errors do not change application status.
+- Email invitation and password-recovery flows depend on Supabase email templates and allowlisted redirect URLs; test these with nonproduction test identities before declaring end-to-end readiness.
