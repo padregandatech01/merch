@@ -1,0 +1,94 @@
+/* Merchandise — retail operations interface, distinct from editorial and cinema */
+.store-accounts,.store-detail{font-family:Arial,Helvetica,sans-serif;color:#244936;max-width:1450px;margin:0 auto}
+.store-heading,.store-detail-head{display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap;margin-bottom:22px}
+.store-label{font-size:10px;font-weight:850;letter-spacing:.13em;text-transform:uppercase;color:#4e8263}
+.store-heading h1,.store-detail-head h1,.store-register h1,.store-portal h1{font-family:Arial,Helvetica,sans-serif;font-weight:900;letter-spacing:-.065em;font-size:clamp(34px,4.3vw,54px);line-height:1.1;margin:12px 0}
+.store-heading p,.store-detail-head p{font-size:14px;color:#65806b;line-height:1.6;margin:0}
+.store-head-number{border:1px solid #b8d3bf;border-radius:12px;background:#fff;padding:15px 20px;min-width:138px;display:grid;gap:2px;text-align:center}
+.store-head-number strong{font-size:28px}.store-head-number span{font-size:11px;color:#6d8472}
+.store-filters-links{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:24px}
+.store-filters-links a{display:block;background:#e8f1e8;color:#487158;border:1px solid #c6dccc;padding:11px 17px;border-radius:9px;font-size:13px;font-weight:750}
+.store-filters-links a[aria-current="page"]{background:#275c41;border-color:#275c41;color:white}
+.store-board{display:grid;grid-template-columns:minmax(0,1fr) 322px;gap:19px;align-items:start}
+.store-list-card,.store-task-card,.store-record-sheet{background:#fff;border:1px solid #d5e3d6;border-radius:13px;box-shadow:0 8px 25px #1b3f2208;padding:clamp(18px,3vw,27px);min-width:0}
+.store-list-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.store-list-heading h2,.store-task-card h2,.store-record-sheet h2,.store-portal h2{font-size:20px;letter-spacing:-.03em;margin:0}
+.store-list-heading span{font-size:12px;color:#729078}
+.store-search-form{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(135px,.9fr) auto;align-items:end;gap:10px;padding:12px;background:#f1f7f0;border-radius:9px;margin-bottom:18px}
+.store-accounts label,.store-detail label,.store-register label,.store-portal label{font-size:12px;display:grid;gap:7px;color:#51705a;font-weight:750}
+.store-accounts :is(input,select,textarea),.store-detail :is(input,select,textarea),.store-register :is(input,select,textarea),.store-portal :is(input,select,textarea){width:100%;min-width:0;border:1px solid #afcbb4;border-radius:8px;background:#fff;color:#234a36;padding:11px 12px;font:13px Arial,sans-serif;min-height:43px}
+.store-accounts textarea,.store-detail textarea,.store-portal textarea{resize:vertical}
+.store-accounts button,.store-detail button,.store-register button[type="submit"],.store-portal button[type="submit"]{border:1px solid #285d42;background:#285d42;color:white;cursor:pointer;border-radius:8px;font:750 13px Arial,sans-serif;padding:11px 17px;min-height:43px}
+.store-accounts button:hover,.store-detail button:hover{background:#1b4832}
+.store-accounts :is(a,button,input,select,textarea):focus-visible,.store-detail :is(a,button,input,textarea):focus-visible,.store-register :is(a,button,input,select):focus-visible,.store-portal :is(a,button,input,textarea):focus-visible{outline:3px solid #efaf7d;outline-offset:3px}
+.store-table-scroll{width:100%;overflow:auto}.store-table{border-collapse:collapse;width:100%;min-width:575px;text-align:left;font-size:12px}
+.store-table th{background:#eef5ee;color:#67816b;font-size:10px;letter-spacing:.06em;text-transform:uppercase;padding:12px 10px;text-align:left}
+.store-table td{border-bottom:1px solid #e6eee5;padding:15px 10px;vertical-align:middle}.store-table td strong{font-size:13px}
+.store-table tbody tr:hover{background:#f8fbf7}
+.store-link{color:#2b7851;text-decoration:underline;text-underline-offset:3px;font-weight:700;font-size:12px;white-space:nowrap}
+.store-state{font-size:11px;font-weight:750;padding:5px 9px;border-radius:6px;border:1px solid;white-space:nowrap}
+.store-state.is-active{background:#e7f4e9;color:#27734a;border-color:#b6d9bf}.store-state.is-suspended{background:#fff0e9;color:#a24c34;border-color:#ecc8b9}
+.store-pages{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:20px;color:#718876;font-size:12px}
+.store-pages a{color:#2b7851;text-decoration:underline}
+.store-taskbar{display:grid;gap:18px}
+.store-task-card h2{margin:9px 0 10px}.store-task-card p,.store-record-sheet p{font-size:13px;line-height:1.65;color:#68816f;overflow-wrap:anywhere}
+.store-task-card details>summary{cursor:pointer;padding:13px 0;color:#28704b;font-weight:750;font-size:13px;border-bottom:1px solid #dce8df}
+.store-task-form{display:grid;gap:13px;margin-top:17px}.store-task-form button{justify-self:start}
+.store-application{border-top:1px solid #e1eae0}
+.store-application>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.store-application>summary::-webkit-details-marker{display:none}
+.store-application>summary span:first-child{min-width:0}
+.store-application>summary strong,.store-application>summary small{display:block;overflow-wrap:anywhere}
+.store-application>summary small{font-size:11px;font-weight:400;color:#77917d;margin-top:4px}
+.store-application .store-supplier-description{padding:11px;background:#f2f8f1;border-left:3px solid #5b9b70;white-space:pre-wrap}
+.store-message{border-left:4px solid #317449;background:#ecf6eb;padding:13px 16px;color:#315e3f;font-size:13px}
+.store-muted{color:#7d9081!important;font-size:12px!important}
+.store-detail{padding-top:5px}.store-detail-head{margin-top:23px;background:#fff;border:1px solid #d8e7d9;border-radius:13px;padding:26px}
+.store-detail-head p{overflow-wrap:anywhere}
+.store-detail-grid{display:grid;grid-template-columns:minmax(0,1fr) 345px;gap:19px;align-items:start}
+.store-record-sheet h2{margin:0 0 18px}.store-record-actions{display:grid;gap:18px}
+.store-facts{margin:0 0 27px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.store-facts>div{background:#f5faf5;border:1px solid #e0e9df;border-radius:9px;padding:13px;min-width:0}
+.store-facts dt{font-size:11px;color:#708d74}.store-facts dd{margin:6px 0 0;color:#2a5037;font-weight:750;font-size:13px;overflow-wrap:anywhere}
+.store-rename-form{display:flex;align-items:end;gap:14px;flex-wrap:wrap}
+.store-rename-form label{flex:1;min-width:180px}
+.store-record-sheet .store-subsection{border-top:1px solid #dbe9dd;margin-top:25px;padding-top:22px}
+.store-record-sheet .store-subsection h2{margin-bottom:12px}
+.store-record-actions .store-task-form{margin-top:15px}
+.store-record-actions button:disabled{opacity:.55;cursor:not-allowed}
+.store-record-actions .store-danger{background:#aa4d32;color:white;border-color:#aa4d32}
+.store-checkbox{display:flex!important;align-items:flex-start;gap:9px;font-weight:500!important;line-height:1.5}
+.store-checkbox input{width:auto!important;min-height:0!important;margin-top:3px;accent-color:#2b6d46}
+.store-history{padding:0;margin:0;list-style:none}.store-history li{border-bottom:1px solid #e0eae0;padding:13px 0}
+.store-history strong{font-size:13px}.store-history small{display:block;margin-top:4px;font-size:11px;color:#7f9180}
+.store-register{min-height:100dvh;background:#ebf3ea;display:grid;place-items:center;padding:clamp(14px,4vw,45px);font-family:Arial,sans-serif;color:#27543c}
+.store-signup-shell{background:#fff;border:1px solid #cfe2d1;border-radius:17px;box-shadow:0 20px 54px #2b5a3414;display:grid;grid-template-columns:minmax(0,.77fr) minmax(0,1fr);max-width:1000px;width:100%;overflow:hidden}
+.store-signup-intro{background:#245f42;padding:clamp(30px,6vw,65px);display:flex;flex-direction:column;justify-content:space-between;gap:45px;color:white}
+.store-signup-intro .store-label{color:#bfe1c8}.store-signup-intro h1{color:white;font-size:clamp(41px,5.8vw,70px)}
+.store-signup-intro p{font-size:14px;line-height:1.75;color:#d7e8d9}
+.store-signup-feature{border-top:1px solid #79aa86;padding-top:20px;font-size:12px!important}
+.store-signup-form{padding:clamp(26px,5vw,60px)}
+.store-signup-form h2{font-size:29px;letter-spacing:-.035em;margin:0}
+.store-signup-form>p{font-size:13px;line-height:1.6;color:#78907e}
+.store-signup-form form{display:grid;gap:16px;margin-top:25px}
+.store-signup-form .portal-field-group{display:grid;gap:14px}.store-signup-form .portal-field-group small{color:#708b78}
+.store-signup-form .portal-link-button{background:transparent!important;color:#32744e;border:0!important;justify-self:start}
+.store-signup-form a{font-size:13px;color:#2c7750;text-decoration:underline}
+.store-portal{min-height:100dvh;background:#edf5ec;padding:clamp(18px,5vw,65px);font-family:Arial,sans-serif;color:#24553b}
+.store-portal-wrap{max-width:1110px;margin:auto}
+.store-portal-head{display:flex;justify-content:space-between;align-items:center;gap:14px;border-bottom:1px solid #c6ddc9;padding-bottom:17px}
+.store-portal-head strong{font-size:16px;font-weight:900;letter-spacing:-.035em}
+.store-portal-head button{background:transparent!important;color:#2c6345!important}
+.store-portal-heading{padding:35px 0}
+.store-portal-heading h1{margin:12px 0}.store-portal-heading p{color:#66836d;font-size:14px;line-height:1.6;max-width:750px}
+.store-portal-grid{display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px}
+.store-profile-card,.store-portal-content{background:#fff;border:1px solid #d5e6d8;border-radius:13px;padding:clamp(20px,3vw,33px);min-width:0}
+.store-profile-card h2{overflow-wrap:anywhere}.store-profile-card p{font-size:12px;color:#718b75;overflow-wrap:anywhere}
+.store-portal-content form{display:grid;gap:14px}.store-portal-content form button{justify-self:start}
+.store-portal-content p{font-size:13px;color:#667d6c;line-height:1.6}
+.store-profile-card .store-label{display:block;margin-bottom:12px}
+.store-portal-checkbox{display:flex!important;gap:9px;align-items:flex-start}.store-portal-checkbox input{width:auto!important;min-height:0!important;margin-top:3px}
+.store-portal-status{padding:11px 14px;background:#edf7ec;border:1px solid #c5dfca;border-radius:8px;font-weight:750;color:#386c49}
+@media(max-width:1250px){.store-board{grid-template-columns:1fr}.store-taskbar{grid-template-columns:repeat(2,minmax(0,1fr))}.store-detail-grid{grid-template-columns:1fr}.store-record-actions{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:750px){.store-taskbar,.store-record-actions{grid-template-columns:1fr}.store-search-form{grid-template-columns:1fr}.store-head-number{min-width:0}.store-signup-shell{grid-template-columns:1fr}.store-signup-intro{gap:20px}.store-portal-grid{grid-template-columns:1fr}.store-facts{grid-template-columns:1fr}}
+@media(max-width:460px){.store-list-card,.store-task-card,.store-record-sheet{padding:18px}.store-heading h1,.store-detail-head h1{font-size:32px}.store-filters-links a{font-size:12px;padding:9px 12px}}

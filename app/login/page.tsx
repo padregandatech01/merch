@@ -9,7 +9,7 @@ export default async function Login({searchParams}:{searchParams:Promise<{error?
  const error=p.error?messages[p.error]??messages.invalid:null;
  const notice=p.notice==="check-email"?"If registration was accepted, check your email for a confirmation link.":null;
 return <main className="me-entry"><div className="me-entry-brand"><strong>LOXADA<span>®</span></strong><small>MERCHANDISE</small></div>
- <section className="me-entry-card"><h1>Sign in</h1>
+ <section className="me-entry-card"><h1>Sign in</h1><p>Buyers and merchandise suppliers</p>
  {error&&<p role="alert" className="me-alert">{error}</p>}{notice&&<p role="status">{notice}</p>}
  <form action={signIn}><label htmlFor="me-email">Email or username</label><input id="me-email" name="email" type="text" autoComplete="username" required/>
  <label htmlFor="me-pass">Password</label><PasswordField/><button className="me-submit" type="submit">Sign in</button></form>

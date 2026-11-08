@@ -1,81 +1,65 @@
 import Link from "next/link";
-import {notFound} from "next/navigation";
-import {requireAdmin} from "@/lib/auth/authorization";
-import {createAdminClient} from "@/lib/supabase/admin";
-import {accountLabels,departmentId,departmentName} from "@/lib/portal/config";
+import {loadAccount} from "@/lib/admin/account-detail";
 import {renameAccount,setAccountStatus,sendRecoveryEmail} from "@/app/actions/admin-account-controls";
 
-const isUuid=(s:string)=>/^[a-f0-9]{8}-[a-f0-9]{4}-[1-8][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(s);
-const messages:Record<string,string>={renamed:"Display name updated.",unchanged:"No changes needed.",suspended:"Account suspended. Portal access is blocked.",reactivated:"Account reactivated.",recovery:"Password-recovery email requested.",recovery_unlogged:"Recovery email requested, but its audit entry could not be saved."};
-const errors:Record<string,string>={invalid:"Check the display name.",changed:"The account has changed. Review the current state and retry.",reason:"Provide an 8–500 character suspension reason and confirmation.",configuration:"Email configuration is missing.",database:"Database operation failed.",email:"Recovery email could not be sent.",cooldown:"A recovery email was requested recently. Try again later."};
-export default async function ManageAccount({params,searchParams}:{params:Promise<{userId:string}>;searchParams:Promise<{error?:string;notice?:string}>}){
- await requireAdmin();
+const labels:Record<string,string>={buyer:"Buyer",wholesaler:"Wholesale supplier",manufacturer:"Lead manufacturer"};
+const messages:Record<string,string>={renamed:"Account name saved.",unchanged:"No changes were needed.",suspended:"Account sign-in suspended.",reactivated:"Account access restored.",recovery:"Password reset email requested.",recovery_unlogged:"Email requested, but the activity record could not be saved."};
+const errors:Record<string,string>={invalid:"Check the account name.",changed:"The account changed. Review its status and try again.",reason:"Enter a reason of at least 8 characters and confirm.",configuration:"Password recovery is not configured.",database:"The change could not be saved.",email:"Could not send the reset email.",cooldown:"A reset email was requested recently."};
+const decisions:Record<string,string>={pending:"Waiting for review",needs_info:"More details required",verified:"Supplier verified",rejected:"Declined",suspended:"Application suspended"};
+export default async function StoreAccount({params,searchParams}:{params:Promise<{userId:string}>;searchParams:Promise<Record<string,string|undefined>>}){
  const {userId}=await params;
- if(!isUuid(userId))notFound();
- const db=createAdminClient();
- if(!db)return <main className="portal-admin" data-brand={departmentId}><div className="portal-card portal-wide"><h1>Account management</h1><p className="portal-alert">Server settings are missing.</p></div></main>;
- const [{data:account,error:aError},{data:staff,error:sError}]=await Promise.all([
-  db.from("portal_accounts").select("user_id,display_name,account_type,status,suspension_reason,created_at").eq("user_id",userId).maybeSingle(),
-  db.from("staff_roles").select("user_id").eq("user_id",userId).maybeSingle()
- ]);
- if(aError||sError||staff||!account)notFound();
- const [{data:authUser},{data:history},{data:application}]=await Promise.all([
-  db.auth.admin.getUserById(userId),
-  db.from("portal_account_audit").select("id,action,note,created_at").eq("subject_user_id",userId).order("created_at",{ascending:false}).limit(25),
-  db.from("supplier_applications").select("status,legal_name,reviewer_feedback").eq("user_id",userId).maybeSingle()
- ]);
- const p=await searchParams,email=authUser?.user?.email;
- return <main className="portal-admin" data-brand={departmentId}><div className="portal-card portal-wide">
-  <Link href="/admin/accounts" className="portal-inline-link">← Accounts</Link>
-  <div className="portal-account-detail-heading">
-   <div><span className="portal-eyebrow">{departmentName} / Account</span>
-    <h1>{account.display_name}</h1><p>{accountLabels[account.account_type]??account.account_type} · {email??"Email unavailable"}</p></div>
-   <span className="portal-pill">{account.status}</span>
+ const {account,authUser,history,application}=await loadAccount(userId);
+ const p=await searchParams;
+ return <main className="store-detail">
+  <Link href="/admin/accounts" className="store-link">← Back to customers &amp; suppliers</Link>
+  <header className="store-detail-head"><div><span className="store-label">STORE ACCOUNT RECORD</span><h1>{account.display_name}</h1>
+    <p>{labels[account.account_type]??account.account_type} · {authUser?.email??"Email unavailable"}</p></div>
+   <span className={"store-state "+(account.status==="active"?"is-active":"is-suspended")}>{account.status==="active"?"Can sign in":"Suspended"}</span>
+  </header>
+  {p.notice&&<p className="store-message" role="status">{messages[p.notice]??""}</p>}
+  {p.error&&<p className="store-message" role="alert">{errors[p.error]??"Could not complete the action."}</p>}
+  <div className="store-detail-grid">
+   <section className="store-record-sheet">
+    <h2>Customer or supplier details</h2>
+    <dl className="store-facts"><div><dt>Account type</dt><dd>{labels[account.account_type]??account.account_type}</dd></div>
+      <div><dt>Joined</dt><dd>{new Date(account.created_at).toLocaleDateString("en-PH")}</dd></div>
+      <div><dt>Email address</dt><dd>{authUser?.email_confirmed_at?"Verified":"Not verified"}</dd></div>
+      <div><dt>Last sign-in</dt><dd>{authUser?.last_sign_in_at?new Date(authUser.last_sign_in_at).toLocaleDateString("en-PH"):"Not recorded"}</dd></div></dl>
+    <form className="store-rename-form" action={renameAccount}><input type="hidden" name="user_id" value={userId}/>
+     <label>Account display name<input name="display_name" defaultValue={account.display_name} minLength={2} maxLength={80} required/></label>
+     <button type="submit">Save name</button>
+    </form>
+    {application&&<section className="store-subsection"><h2>Supplier application</h2>
+      <p>{application.legal_name} · {decisions[application.status]??application.status}</p>
+      {application.reviewer_feedback&&<p>Review notes: {application.reviewer_feedback}</p>}
+      <p className="store-muted">Supplier verification does not approve an item for sale or authorize purchase orders.</p>
+      <Link className="store-link" href="/admin/accounts">Review supplier applications</Link>
+     </section>}
+    <section className="store-subsection"><h2>Account change history</h2>
+     {!history.length&&<p className="store-muted">No changes recorded.</p>}
+     <ol className="store-history">{history.map(h=><li key={h.id}><strong>{({account_suspended:"Account suspended",account_reactivated:"Account reactivated",display_name_changed:"Name changed",recovery_email_sent:"Password email requested"} as Record<string,string>)[h.action]??h.action}</strong>
+      <small>{new Date(h.created_at).toLocaleString("en-PH")}</small>{h.note&&<p>{h.note}</p>}</li>)}</ol>
+    </section>
+   </section>
+   <aside className="store-record-actions">
+    <section className="store-task-card"><span className="store-label">SIGN-IN CONTROL</span><h2>{account.status==="active"?"Suspend access":"Restore access"}</h2>
+     <p>Controls whether the buyer or supplier can sign in. Existing orders, contracts, and review decisions are not deleted.</p>
+     {account.status==="suspended"&&<p><strong>Current reason:</strong> {account.suspension_reason}</p>}
+     <form className="store-task-form" action={setAccountStatus}>
+      <input type="hidden" name="user_id" value={userId}/><input type="hidden" name="expected_status" value={account.status}/>
+      {account.status==="active"?<><input type="hidden" name="status" value="suspended"/>
+       <label>Reason for suspension<textarea name="reason" rows={3} minLength={8} maxLength={500} required/></label>
+       <label className="store-checkbox"><input type="checkbox" name="confirm" required/> Stop this account from signing in.</label>
+       <button type="submit" className="store-danger">Suspend sign-in</button>
+      </>:<><input type="hidden" name="status" value="active"/><button type="submit">Restore sign-in</button></>}
+     </form>
+    </section>
+    <section className="store-task-card"><span className="store-label">ACCOUNT HELP</span><h2>Reset password</h2>
+     <p>Send the account owner a reset email. Store administrators do not see passwords.</p>
+     <form action={sendRecoveryEmail}><input type="hidden" name="user_id" value={userId}/>
+      <button disabled={!authUser?.email} type="submit">Send reset email</button></form>
+    </section>
+   </aside>
   </div>
-  {p.notice&&<p role="status" className="portal-notice">{messages[p.notice]??""}</p>}
-  {p.error&&<p role="alert" className="portal-alert">{errors[p.error]??"Request failed."}</p>}
-  <div className="portal-summary-grid">
-   <div><small>Created</small><strong>{new Date(account.created_at).toLocaleDateString("en-PH")}</strong></div>
-   <div><small>Email</small><strong>{authUser?.user?.email_confirmed_at?"Verified":"Not verified"}</strong></div>
-   <div><small>Last login</small><strong>{authUser?.user?.last_sign_in_at?new Date(authUser.user.last_sign_in_at).toLocaleDateString("en-PH"):"No recorded sign-in"}</strong></div>
-  </div>
-  {account.status==="suspended"&&<p className="portal-alert"><strong>Reason:</strong> {account.suspension_reason}</p>}
-  <section className="portal-section"><h2>Display name</h2><p>Identity type and staff permissions are not editable here.</p>
-   <form action={renameAccount} className="portal-inline-form">
-    <input type="hidden" name="user_id" value={userId}/>
-    <label>Name<input name="display_name" defaultValue={account.display_name} minLength={2} maxLength={80} required/></label>
-    <button type="submit" className="portal-outline">Save</button>
-   </form>
-  </section>
-  <section className="portal-section"><h2>Portal access</h2>
-   <p>Suspension blocks department access and supplier submissions, but does not delete business records or supplier decisions.</p>
-   <form action={setAccountStatus}><input type="hidden" name="user_id" value={userId}/>
-    <input type="hidden" name="expected_status" value={account.status}/>
-    {account.status==="active"
-     ? <><input type="hidden" name="status" value="suspended"/>
-       <label>Suspension reason<textarea name="reason" minLength={8} maxLength={500} rows={3} required/></label>
-       <label className="portal-check"><input type="checkbox" name="confirm" required/> Block this account's department access.</label>
-       <button type="submit" className="portal-danger">Suspend account</button></>
-     : <><input type="hidden" name="status" value="active"/><button type="submit" className="portal-primary">Reactivate account</button></>}
-   </form>
-  </section>
-  <section className="portal-section"><h2>Password recovery</h2>
-   <p>Request a recovery email for the account holder. Administrators cannot see or set their password.</p>
-   <form action={sendRecoveryEmail}><input type="hidden" name="user_id" value={userId}/>
-    <button type="submit" disabled={!email} className="portal-outline">Send recovery email</button>
-   </form>
-  </section>
-  {application&&<section className="portal-section"><h2>Supplier application</h2>
-   <p>{application.legal_name} · {application.status.replaceAll("_"," ")}</p>
-   {application.reviewer_feedback&&<p>{application.reviewer_feedback}</p>}
-   <Link className="portal-inline-link" href="/admin/accounts">Supplier reviews</Link>
-  </section>}
-  <section className="portal-section"><h2>Recent account changes</h2>
-   {!history?.length&&<p>None recorded.</p>}
-   <ol className="portal-audit-list">{history?.map(h=><li key={h.id}>
-    <strong>{h.action.replaceAll("_"," ")}</strong><span>{new Date(h.created_at).toLocaleString("en-PH")}</span>
-    {h.note&&<p>{h.note}</p>}
-   </li>)}</ol>
-  </section>
- </div></main>;
+ </main>;
 }

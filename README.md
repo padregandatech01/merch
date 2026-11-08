@@ -31,3 +31,11 @@ There are no placeholder subscriber payments, retail orders, or manuscript publi
 
 ## Department account management
 Department administrators can search/filter portal accounts, edit display names, suspend/reactivate with an audit trail, and send email recovery requests at /admin/accounts. Staff roles are separate and never granted through these controls. Portal suspension is enforced in login and supplier RLS. Email recovery requires configured Supabase email delivery and allowed redirect URLs.
+
+## Account interface and terminology (V1)
+- UX identity: compact retail operations board and storefront-style buyer registration.
+- Use **Buyer**, **Wholesale supplier**, and **Lead manufacturer**.
+- Buyers self-register; business suppliers join via admin invitation and complete their details inside their account.
+- Supplier verification does not approve product authenticity, stock receipt, purchase orders, or customer-facing listings.
+- Buyer registration does not create a payment, order, cart, or shipping address.
+- Account management, buyer signup and supplier applications have independent Merchandise-specific interfaces.
