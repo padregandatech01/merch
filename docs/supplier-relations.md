@@ -32,6 +32,15 @@ The invitation form stores the message on-platform regardless of the email templ
 - The migration file follows the exact applied Supabase schema migration version. Do not replay it or modify existing application/account records.
 - Existing public authors in Manga & Light Novel can register directly and are not subject to invitation gatekeeping; author-application submission creates their completed relationship record.
 
+## Troubleshoot invitations
+
+- **Email could not be sent** is a delivery failure, not an existing account. Check Authentication logs and the SMTP provider. Resend's `onboarding@resend.dev` is test-only and accepts the Resend account's email. For other recipients, verify a sender domain and change the sender email in hosted Supabase SMTP settings, or use another production SMTP provider.
+- **Email already has an account** is shown only when Auth confirms an account conflict. If a relationship already exists, open it instead of resending from the new invite form. This form does not resend existing invitations.
+- **Email sent but setup incomplete** means Auth sent the email and a later database write failed. Check Vercel logs for `supplier_invite_failed` and the named step. If the relationship exists but its first message is missing, open it and post the message there. Do not delete an existing Auth user just to retry.
+- The form keeps your draft after a failed attempt. Provider messages, contact details, and invite tokens are not included in the application logs or in its user-facing errors.
+
+Run the error-mapping regression tests with Node.js 22.18+ or Node.js 24 using `node --test tests/supplier-invite.test.mjs`.
+
 ## Acceptance checklist
 - Admin sends a real invitation with a 40+ character introduction; invited contact receives the customized email and access link.
 - Invitee sets password, accesses only their invitation, exchanges messages, accepts/declines, and is not able to submit an application until account completion.
