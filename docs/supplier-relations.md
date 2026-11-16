@@ -28,7 +28,8 @@ The invitation form stores the message on-platform regardless of the email templ
 - One relationship per account; supplier type is fixed by trusted server action.
 - Suppliers get SELECT-only RLS access to their own relationship/message rows; writes go through server actions with object authorization.
 - A declined or revoked invitation closes message posting, while retaining read-only history. Admin may reopen an invitation; no automatic re-email currently occurs.
-- There is no live push subscription: users can revisit the thread to see new replies. Invite/recovery email delivery and real sign-in must be tested using a nonproduction identity before considering the full workflow end-to-end verified.
+- Open conversations update over Supabase Realtime, with reconnect, tab-focus catch-up and a manual Refresh button. The browser treats Realtime events only as signals to refresh. The server reloads the thread under the existing authorization rules.
+- Accept, decline, revoke, reopen and account-completed transitions append private system notices atomically. The first ordinary supplier reply moves the invitation into discussion without a system notice. Previous decisions are not backfilled. The database also blocks replies if a conversation closes while a message is being sent.
 - The migration file follows the exact applied Supabase schema migration version. Do not replay it or modify existing application/account records.
 - Existing public authors in Manga & Light Novel can register directly and are not subject to invitation gatekeeping; author-application submission creates their completed relationship record.
 
@@ -42,6 +43,7 @@ The invitation form stores the message on-platform regardless of the email templ
 Run the error-mapping regression tests with Node.js 22.18+ or Node.js 24 using `node --test tests/supplier-invite.test.mjs`.
 
 ## Acceptance checklist
+- Open the same private thread as admin and supplier. Replies and decision notices appear without a manual reload. Reload both tabs to confirm the notices persist. Change connection state and return to the thread to check catch-up.
 - Admin sends a real invitation with a 40+ character introduction; invited contact receives the customized email and access link.
 - Invitee sets password, accesses only their invitation, exchanges messages, accepts/declines, and is not able to submit an application until account completion.
 - Admin cannot read messages from another department. A supplier cannot access another relationship by changing its UUID.

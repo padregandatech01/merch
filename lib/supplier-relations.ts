@@ -10,7 +10,7 @@ export type Relationship={
  requested_email:string|null;created_at:string;updated_at:string;accepted_at:string|null;
  last_message_at:string|null;last_sender_kind:string|null;admin_read_at:string|null;supplier_read_at:string|null
 };
-export type RelationMessage={id:string;relationship_id:string;sender_user_id:string;sender_kind:string;body:string;created_at:string};
+export type RelationMessage={id:string;relationship_id:string;sender_user_id:string|null;sender_kind:"admin"|"supplier"|"system";body:string;created_at:string};
 export const stages:Record<string,string>={
  invited:"Invited",discussing:"In conversation",accepted:"Accepted — account setup",
  completed:"Full account",declined:"Declined",revoked:"Invitation revoked"
