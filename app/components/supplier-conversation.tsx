@@ -14,15 +14,18 @@ export default function SupplierConversation({relation,thread,viewer,baseUrl}:{
   new Date(relation.last_message_at).getTime()>new Date((viewer==="admin"?relation.admin_read_at:relation.supplier_read_at)!).getTime());
  return <section className="sr-card sr-conversation">
   <div className="sr-section-heading"><div><h2>Conversation</h2><p>Private messages between this supplier and the department team.</p></div>
-   <RefreshMessages/>
+   <RefreshMessages key={relation.id} relationshipId={relation.id}
+    latestMessageId={thread.messages.at(-1)?.id} page={thread.page}/>
    {unread&&<form action={markRelationshipRead}><input type="hidden" name="relationship_id" value={relation.id}/>
     <SubmitButton label="Mark as read" pendingLabel="Updating..."/></form>}
   </div>
   {thread.error&&<p className="sr-alert" role="alert">{thread.error}</p>}
-  <div className="sr-messages" aria-label="Supplier conversation">
-   {thread.messages.map(m=><article key={m.id} className={"sr-bubble "+(m.sender_kind===viewer?"sr-mine":"sr-theirs")}>
+  <div id={"supplier-timeline-"+relation.id} className="sr-messages" role="log" aria-label="Supplier conversation">
+   {thread.messages.map(m=>m.sender_kind==="system"?<div key={m.id} className="sr-system-notice">
+     <span>{m.body}</span><time dateTime={m.created_at}>{new Date(m.created_at).toLocaleString("en-PH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Manila"})}</time>
+    </div>:<article key={m.id} className={"sr-bubble "+(m.sender_kind===viewer?"sr-mine":"sr-theirs")}>
      <div className="sr-message-meta"><strong>{m.sender_kind==="admin"?"Loxada department":"Supplier"}</strong>
-      <time dateTime={m.created_at}>{new Date(m.created_at).toLocaleString("en-PH",{dateStyle:"medium",timeStyle:"short"})}</time></div>
+      <time dateTime={m.created_at}>{new Date(m.created_at).toLocaleString("en-PH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Manila"})}</time></div>
      <p>{m.body}</p>
     </article>)}
    {!thread.messages.length&&!thread.error&&<p className="sr-empty">No messages yet.</p>}

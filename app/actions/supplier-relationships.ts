@@ -35,8 +35,7 @@ export async function sendRelationshipMessage(form:FormData){
  if(rateError)redirect(where+"?error=database");
  if(recent?.length)redirect(where+"?error=slow");
  const {error}=await db.from("supplier_messages").insert({relationship_id:id,sender_user_id:user.id,sender_kind:kind,body});
- if(error)redirect(where+"?error=database");
- if(!isAdmin&&r.status==="invited")await db.from("supplier_relationships").update({status:"discussing",updated_at:new Date().toISOString()}).eq("id",id).eq("status","invited");
+ if(error)redirect(where+(error.code==="55000"?"?error=closed":"?error=database"));
  revalidatePath(target(id));revalidatePath("/admin/relations");
  revalidatePath("/invitation");revalidatePath("/portal/messages");
  const destination=isAdmin?target(id):r.status==="completed"?"/portal/messages":"/invitation";
@@ -53,7 +52,7 @@ export async function decideInvitation(form:FormData){
  const {data,error}=await db.from("supplier_relationships").update(values)
   .eq("id",relationship.id).eq("user_id",user.id).eq("status",relationship.status).select("id").maybeSingle();
  if(error||!data)redirect("/invitation?error=changed");
- revalidatePath("/admin/relations");revalidatePath("/invitation");
+ revalidatePath(target(relationship.id));revalidatePath("/admin/relations");revalidatePath("/invitation");
  redirect("/invitation?notice="+(choice==="accept"?"accepted":"declined"));
 }
 export async function chooseSupplierEmail(form:FormData){
@@ -88,7 +87,7 @@ export async function completeSupplierAccount(){
  const {data,error}=await db.from("supplier_relationships").update({status:"completed",completed_at:now,updated_at:now})
   .eq("id",relationship.id).eq("user_id",user.id).eq("status","accepted").select("id").maybeSingle();
  if(error||!data)redirect("/invitation?error=changed");
- revalidatePath("/admin/relations");revalidatePath("/portal");
+ revalidatePath(target(relationship.id));revalidatePath("/admin/relations");revalidatePath("/portal");
  redirect("/portal?notice=onboarded");
 }
 export async function manageRelationship(form:FormData){
