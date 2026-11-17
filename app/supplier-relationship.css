@@ -116,3 +116,7 @@
 .ac-control:focus-visible,.ac-filter-panel summary:focus-visible{outline:2px solid var(--sr-accent);outline-offset:2px}
 .ac-filter-panel summary{width:fit-content;max-width:100%;cursor:pointer;font-size:13px;font-weight:700;color:var(--sr-accent);padding:6px 0}
 .ac-filter-panel .sr-actions{align-items:center}
+
+.ac-extra-controls{display:grid;gap:10px;padding-top:8px}
+.ac-extra-controls .ac-drills{align-items:center;margin:0}
+.ac-extra-controls .ac-types{margin-top:0}

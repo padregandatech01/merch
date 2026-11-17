@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {accountDetailUrl,accountRoles,buildAccountMatrix,inlineCubeUrl,parseCubeView,parseInlineCubeView,periodBounds,registrationView,accountListFields} from "../lib/admin/account-cube-model.ts";
+import {accountDetailUrl,accountRoles,buildAccountMatrix,inlineCubeUrl,parseCubeView,parseInlineCubeView,periodBounds,adminRole,accountListFields,manilaMonth} from "../lib/admin/account-cube-model.ts";
 import {canReviewApplication,isApplicationRevision} from "../lib/admin/application-review.ts";
 const roles=["reader","creator","publisher"],customer="reader";
 const cells=[
@@ -20,7 +20,7 @@ test("pivot exchanges row and column totals without changing the measure",()=>{
  const b=buildAccountMatrix(cells,{...view,row:view.col,col:view.row},roles,customer);
  assert.equal(a.total,10);
  assert.equal(a.total,b.total);
- assert.equal(a.counts.get("suppliers").get("active"),b.counts.get("active").get("suppliers"));
+ assert.equal(a.counts.get("2026").get("suppliers"),b.counts.get("suppliers").get("2026"));
 });
 test("drill levels preserve totals and support exact filtered detail",()=>{
  const group=parseCubeView({row:"account",col:"time",period:"2026"},roles);
@@ -33,7 +33,7 @@ test("drill levels preserve totals and support exact filtered detail",()=>{
  assert.equal(accountDetailUrl(monthView,"creator","2026-10",roles,customer),"/admin/accounts?role=creator&period=2026-10");
 });
 test("slices combine into a dice and keep every filter on drill-through",()=>{
- const view=parseCubeView({roles:["publisher","creator","admin"],status:"suspended",period:"2026-11"},roles);
+ const view=parseCubeView({row:"account",col:"status",roles:["publisher","creator","admin"],status:"suspended",period:"2026-11"},roles);
  assert.deepEqual(accountRoles(["publisher,creator","publisher"],roles),["creator","publisher"]);
  assert.equal(buildAccountMatrix(cells,view,roles,customer).total,1);
  assert.equal(accountDetailUrl(view,"suppliers","suspended",roles,customer),"/admin/accounts?roles=creator%2Cpublisher&status=suspended&period=2026-11");
@@ -65,15 +65,44 @@ test("account records and inline analysis retain independent URL filters",()=>{
  assert.equal(details.searchParams.has("q"),false);
  assert.equal(accountListFields(details.pathname+details.search+details.hash).get("cubePeriod"),"2026");
 });
-test("registration shortcut preserves filters and puts years on an actual axis",()=>{
- const original=parseInlineCubeView({cubePeriod:"2026",cubeRoles:"creator"},roles);
- const years=registrationView(original);
- assert.equal(years.row,"time");
- assert.equal(years.col,"account");
- assert.equal(years.timeLevel,"year");
- const months={...years,timeLevel:"month"};
- assert.deepEqual(buildAccountMatrix(cells,years,roles,customer).rows,["2026"]);
- assert.deepEqual(buildAccountMatrix(cells,months,roles,customer).rows,["2026-10"]);
- assert.equal(buildAccountMatrix(cells,months,roles,customer).total,buildAccountMatrix(cells,years,roles,customer).total);
- assert.equal(registrationView(months),months);
+
+test("account group, year and time grouping can be chosen independently",()=>{
+ const options=[...roles,adminRole];
+ const data=[...cells,{account_type:adminRole,status:"not_tracked",month:"2026-04",total:1}];
+ const quarters=parseInlineCubeView({cubeGroup:"admins",cubePeriod:"2026",timeLevel:"quarter"},roles);
+ const adminMatrix=buildAccountMatrix(data,quarters,options,customer);
+ assert.deepEqual(adminMatrix.rows,["2026-Q1","2026-Q2","2026-Q3","2026-Q4"]);
+ assert.deepEqual(adminMatrix.columns,["admins"]);
+ assert.equal(adminMatrix.counts.get("2026-Q2").get("admins"),1);
+ assert.equal(accountDetailUrl(quarters,"2026-Q2","admins",options,customer),null);
+ const lastYear=parseInlineCubeView({cubeGroup:"suppliers",cubePeriod:"2025",timeLevel:"month"},roles);
+ const suppliers=buildAccountMatrix(data,lastYear,options,customer);
+ assert.equal(suppliers.rows.length,12);
+ assert.equal(suppliers.counts.get("2025-12").get("suppliers"),4);
+ assert.equal(accountDetailUrl(lastYear,"2025-12","suppliers",options,customer),"/admin/accounts?roles=creator%2Cpublisher&period=2025-12");
+ const years=buildAccountMatrix(data,parseInlineCubeView({cubeGroup:"customers"},roles),options,customer);
+ assert.deepEqual(years.rows,["2026"]);
+ assert.equal(years.total,2);
+});
+test("quarter drill-through preserves the narrower period and PHT cutoff",()=>{
+ assert.deepEqual(periodBounds("2026-Q4"),{from:"2026-09-30T16:00:00.000Z",to:"2026-12-31T16:00:00.000Z"});
+ assert.equal(manilaMonth(new Date("2026-09-30T16:00:00Z")),"2026-10");
+ assert.equal(periodBounds("2026-Q5"),null);
+ const view=parseInlineCubeView({cubeGroup:"suppliers",cubePeriod:"2026-Q4",timeLevel:"month"},roles);
+ const matrix=buildAccountMatrix(cells,view,roles,customer);
+ assert.deepEqual(matrix.rows,["2026-10","2026-11","2026-12"]);
+ assert.equal(matrix.total,4);
+ assert.equal(accountDetailUrl(view,"2026-10","suppliers",roles,customer),"/admin/accounts?roles=creator%2Cpublisher&period=2026-10");
+ const quarter={...view,timeLevel:"quarter",period:"2026"};
+ assert.equal(accountDetailUrl(quarter,"2026-Q4","suppliers",roles,customer),"/admin/accounts?roles=creator%2Cpublisher&period=2026-Q4");
+});
+test("staff do not contaminate user and supplier access counts or detail links",()=>{
+ const options=[...roles,adminRole];
+ const data=[...cells,{account_type:adminRole,status:"not_tracked",month:"2026-10",total:2}];
+ const view=parseInlineCubeView({row:"time",col:"status",timeLevel:"quarter"},roles);
+ const matrix=buildAccountMatrix(data,view,options,customer);
+ assert.equal(matrix.counts.get("2026-Q4").get("not_tracked"),2);
+ assert.equal(matrix.counts.get("2026-Q4").get("active"),5);
+ assert.equal(accountDetailUrl(view,"2026-Q4","not_tracked",options,customer),null);
+ assert.equal(accountDetailUrl(view,"2026-Q4","active",options,customer),"/admin/accounts?status=active&period=2026-Q4");
 });
