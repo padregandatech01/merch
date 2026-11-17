@@ -75,3 +75,23 @@
 .sa-table th:first-child{text-align:left}
 .sa-table tfoot{background:var(--sr-soft)}
 @media(max-width:500px){.sa-table{font-size:12px}.sa-table th,.sa-table td{padding:8px 5px}}
+
+/* Compact supplier-side workspace, with the department's existing theme. */
+.sp-panel{max-width:1080px}
+.sp-head{margin-bottom:16px}
+.sp-head p+p{margin-top:5px}
+.sp-signout{color:var(--sr-accent);font-weight:700;border:1px solid var(--sr-border);border-radius:8px;padding:8px 12px;background:var(--sr-card)}
+.sp-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.sp-nav a{padding:8px 12px;border:1px solid var(--sr-border);border-radius:8px;color:var(--sr-accent);font-weight:700;font-size:14px}
+.sp-nav a[aria-current="page"]{background:var(--sr-soft);border-color:var(--sr-accent);color:var(--sr-text)}
+.sp-nav a:focus-visible,.sp-signout:focus-visible{outline:2px solid var(--sr-accent);outline-offset:2px}
+.sp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,255px),1fr));gap:14px}
+.sp-grid>.sr-card{margin-top:0}
+.sp-grid p{margin-top:8px}
+.sp-grid .sr-link{display:inline-block;margin-top:10px}
+.sp-form{display:grid;gap:13px;max-width:740px;margin-top:16px}
+.sp-form .sp-check{display:flex;align-items:flex-start;gap:8px}
+.sp-form .sp-check input{width:auto;margin-top:3px}
+.sp-form button{justify-self:start}
+.sp-statement{white-space:pre-wrap;margin:12px 0}
+.sp-feedback{margin:12px 0}

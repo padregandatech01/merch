@@ -13,15 +13,15 @@ export async function submitSupplierApplication(form:FormData) {
  if(legalName.length<2 || legalName.length>160 ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactEmail) || contactEmail.length>254 ||
     (organizationName.length>0 && (organizationName.length<2 || organizationName.length>160)) ||
-    statement.length<20 || statement.length>3000 || form.get("affirmed")!=="on") redirect("/portal?error=invalid");
+    statement.length<20 || statement.length>3000 || form.get("affirmed")!=="on") redirect("/portal/application?error=invalid");
  const values={legal_name:legalName,contact_email:contactEmail,
   organization_name:organizationName||null,capability_statement:statement,affirmed:true,updated_at:new Date().toISOString()};
  const {data:current,error:lookupError}=await db.from("supplier_applications").select("id,status").eq("user_id",user.id).maybeSingle();
- if(lookupError) redirect("/portal?error=database");
- if(current && current.status!=="needs_info") redirect("/portal?error=locked");
+ if(lookupError) redirect("/portal/application?error=database");
+ if(current && current.status!=="needs_info") redirect("/portal/application?error=locked");
  const result=current
   ? await db.from("supplier_applications").update({...values,status:"pending"}).eq("user_id",user.id).eq("status","needs_info").select("id").single()
   : await db.from("supplier_applications").insert({...values,user_id:user.id}).select("id").single();
- if(result.error || !result.data) redirect("/portal?error=database");
- redirect("/portal?notice=submitted");
+ if(result.error || !result.data) redirect("/portal/application?error=database");
+ redirect("/portal/application?notice=submitted");
 }
