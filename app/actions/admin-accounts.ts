@@ -5,6 +5,7 @@ import {createClient as createServiceClient} from "@supabase/supabase-js";
 import {requireAdmin} from "@/lib/auth/authorization";
 import {invitationTypes} from "@/lib/portal/config";
 import {inviteErrorFor,type InviteState} from "@/lib/supplier-invite";
+import {canReviewApplication,isApplicationRevision} from "@/lib/admin/application-review";
 function service() {
  const url=process.env.NEXT_PUBLIC_SUPABASE_URL,key=process.env.SUPABASE_SECRET_KEY;
  if(!url||!key)return null;
@@ -79,16 +80,21 @@ export async function reviewSupplier(form:FormData) {
  const id=String(form.get("application_id")??"");
  const status=String(form.get("status")??"");
  const expected=String(form.get("expected_status")??"");
+ const revision=String(form.get("expected_updated_at")??"");
+ const priorReview=String(form.get("expected_reviewed_at")??"");
  const target=/^[0-9a-f-]{36}$/i.test(id)?"/admin/onboarding/"+id:"/admin/onboarding";
  const feedback=String(form.get("reviewer_feedback")??"").trim();
- if(!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/.test(id) || !["pending","needs_info","verified","rejected","suspended"].includes(expected) ||
+ if(!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/.test(id) ||
    !["verified","needs_info","rejected","suspended"].includes(status) || feedback.length>1000 ||
    (status!=="verified" && feedback.length<5)) redirect(target+"?error=invalid");
+ if(!canReviewApplication(expected)||!isApplicationRevision(revision)||priorReview&&!isApplicationRevision(priorReview))redirect(target+"?error=changed");
  const admin=service();
  if(!admin) redirect(target+"?error=configuration");
- const {data:reviewed,error}=await admin.from("supplier_applications")
-  .update({status,reviewer_feedback:feedback||null,reviewed_at:new Date().toISOString()})
-  .eq("id",id).eq("status",expected).select("id").single();
+ const now=new Date().toISOString();
+ const update=admin.from("supplier_applications")
+  .update({status,reviewer_feedback:feedback||null,reviewed_at:now,updated_at:now})
+  .eq("id",id).eq("status","pending").eq("updated_at",revision);
+ const {data:reviewed,error}=await (priorReview?update.eq("reviewed_at",priorReview):update.is("reviewed_at",null)).select("id").maybeSingle();
  if(error || !reviewed) redirect(target+"?error=changed");
  revalidatePath("/admin/onboarding");
  revalidatePath(target);

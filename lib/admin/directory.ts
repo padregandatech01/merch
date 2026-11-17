@@ -1,18 +1,21 @@
 import {requireAdmin} from "@/lib/auth/authorization";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {customerType,supplierTypes} from "@/lib/portal/config";
+import {accountPeriod,accountRoles,periodBounds} from "./account-cube-model";
 
 export type PortalPerson={
  user_id:string;display_name:string;account_type:string;status:string;created_at:string
 };
 export type Directory={
- q:string;role:string;status:string;page:number;total:number;pages:number;
+ q:string;role:string;roles:string[];period:string;status:string;page:number;total:number;pages:number;
  people:PortalPerson[];error:string|null
 };
-export function directoryUrl(data:Pick<Directory,"q"|"role"|"status">,page:number){
+export function directoryUrl(data:Pick<Directory,"q"|"role"|"roles"|"period"|"status">,page:number){
  const params=new URLSearchParams();
  if(data.q)params.set("q",data.q);
  if(data.role!=="all")params.set("role",data.role);
+ else if(data.roles.length)params.set("roles",data.roles.join(","));
+ if(data.period)params.set("period",data.period);
  if(data.status!=="all")params.set("status",data.status);
  if(page!==1)params.set("page",String(page));
  return "/admin/accounts"+(params.size?"?"+params.toString():"");
@@ -23,10 +26,12 @@ export async function loadDirectory(params:Record<string,string|undefined>):Prom
  const q=String(params.q??"").trim().replace(/[%_,]/g,"").slice(0,60);
  const roles=[customerType,...supplierTypes];
  const role=roles.includes(params.role??"")?params.role!:"all";
+ const selectedRoles=role==="all"?accountRoles(params.roles,roles):[];
+ const period=accountPeriod(params.period),bounds=periodBounds(period);
  const status=["active","suspended"].includes(params.status??"")?params.status!:"all";
  const n=Number(params.page??"1");
  const page=Number.isSafeInteger(n)&&n>=1&&n<=10000?n:1;
- const empty=(error:string):Directory=>({q,role,status,page,total:0,pages:1,people:[],error});
+ const empty=(error:string):Directory=>({q,role,roles:selectedRoles,period,status,page,total:0,pages:1,people:[],error});
  const db=createAdminClient();
  if(!db)return empty("Account management is not configured.");
  // Staff identities never appear as manageable customer/supplier accounts.
@@ -38,9 +43,11 @@ export async function loadDirectory(params:Record<string,string|undefined>):Prom
  for(const member of staff??[])query=query.neq("user_id",member.user_id);
  if(q)query=query.ilike("display_name","%"+q+"%");
  if(role!=="all")query=query.eq("account_type",role);
+ else if(selectedRoles.length)query=query.in("account_type",selectedRoles);
+ if(bounds)query=query.gte("created_at",bounds.from).lt("created_at",bounds.to);
  if(status!=="all")query=query.eq("status",status);
  const {data,error,count}=await query.range((page-1)*PAGE_SIZE,page*PAGE_SIZE-1);
  const total=count??0;
- return {q,role,status,page,total,pages:Math.max(1,Math.ceil(total/PAGE_SIZE)),
+ return {q,role,roles:selectedRoles,period,status,page,total,pages:Math.max(1,Math.ceil(total/PAGE_SIZE)),
   people:(data??[]) as PortalPerson[],error:error?"Account records could not be loaded.":null};
 }

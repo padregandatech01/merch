@@ -15,14 +15,14 @@ const allowed=["all","action","pending","needs_info","verified","rejected","susp
 export function onboardingUrl(d:Pick<OnboardingQueue,"q"|"status">,page:number){
  const p=new URLSearchParams();
  if(d.q)p.set("q",d.q);
- if(d.status!=="action")p.set("status",d.status);
+ if(d.status!=="pending")p.set("status",d.status);
  if(page!==1)p.set("page",String(page));
  return "/admin/onboarding"+(p.size?"?"+p.toString():"");
 }
 export async function loadOnboarding(params:Record<string,string|undefined>):Promise<OnboardingQueue>{
  await requireAdmin();
  const q=String(params.q??"").trim().replace(/[%_,]/g,"").slice(0,60);
- const status=allowed.includes(params.status??"")?params.status!:"action";
+ const status=allowed.includes(params.status??"")?params.status!:"pending";
  const n=Number(params.page??"1"),page=Number.isSafeInteger(n)&&n>=1&&n<=10000?n:1;
  const empty=(error:string):OnboardingQueue=>({q,status,page,pages:1,total:0,pending:0,requests:[],error});
  const db=createAdminClient();
@@ -35,7 +35,7 @@ export async function loadOnboarding(params:Record<string,string|undefined>):Pro
  else if(status!=="all")query=query.eq("status",status);
  const [list,queueCount]=await Promise.all([
   query.range((page-1)*PAGE_SIZE,page*PAGE_SIZE-1),
-  db.from("supplier_applications").select("id",{count:"exact",head:true}).in("status",["pending","needs_info"])
+  db.from("supplier_applications").select("id",{count:"exact",head:true}).eq("status","pending")
  ]);
  const total=list.count??0;
  return {q,status,page,pages:Math.max(1,Math.ceil(total/PAGE_SIZE)),total,pending:queueCount.count??0,

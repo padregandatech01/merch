@@ -62,7 +62,8 @@ export default async function SupplierActivityPage(){
     </div>
    </section>
    <section className="sr-card" aria-labelledby="sa-access">
-    <h2 id="sa-access">Account access by type</h2>
+    <div className="sr-section-heading"><h2 id="sa-access">Account access by type</h2>
+     <Link className="sr-link" href="/admin/supplier-activity/accounts">Explore Account Analysis →</Link></div>
     <p className="sr-note">Staff are excluded. Not suspended does not mean the supplier finished setting up their account or was verified.</p>
     <div className="sa-table-wrap"><table className="sa-table" aria-labelledby="sa-access">
      <thead><tr><th scope="col">Account type</th><th scope="col">Not suspended</th><th scope="col">Suspended</th><th scope="col">Total</th></tr></thead>
