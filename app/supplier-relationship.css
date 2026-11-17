@@ -95,3 +95,15 @@
 .sp-form button{justify-self:start}
 .sp-statement{white-space:pre-wrap;margin:12px 0}
 .sp-feedback{margin:12px 0}
+
+/* Account cube controls are compact and wrap on narrow screens. */
+.ac-form{display:grid;gap:14px;margin-top:12px}
+.ac-form fieldset{min-width:0;border:1px solid var(--sr-border);border-radius:8px;padding:10px 12px}
+.ac-form legend{padding:0 5px;font-weight:700}
+.ac-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px}
+.ac-types{display:flex;gap:8px 16px;flex-wrap:wrap;margin-top:12px}
+.ac-types label{display:flex;align-items:center}
+.ac-types input{width:auto}
+.ac-drills{margin:10px 0}
+.ac-table th,.ac-table td{white-space:nowrap}
+.ac-account-filter{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-block:12px}

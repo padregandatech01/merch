@@ -1,10 +1,11 @@
 import Link from "next/link";
 import {loadApplication} from "@/lib/admin/onboarding";
+import {canReviewApplication} from "@/lib/admin/application-review";
 import {accountLabels} from "@/lib/portal/config";
 import {reviewSupplier} from "@/app/actions/admin-accounts";
 import SubmitButton from "@/app/admin/components/submit-button";
 const labels:Record<string,string>={pending:"Waiting for review",needs_info:"More information requested",verified:"Applicant verified",rejected:"Application declined",suspended:"Application suspended"};
-const errors:Record<string,string>={invalid:"Choose a decision and provide feedback when required.",configuration:"The application cannot be updated until admin settings are configured.",database:"Could not save the decision.",changed:"This application was updated by someone else. Review its current status and try again."};
+const errors:Record<string,string>={invalid:"Choose a decision and provide feedback when required.",configuration:"The application cannot be updated until admin settings are configured.",database:"Could not save the decision.",changed:"The application has changed since this form was opened. Check the latest submission before reviewing."};
 export default async function ReviewApplication({params,searchParams}:{params:Promise<{applicationId:string}>;searchParams:Promise<Record<string,string|undefined>>}){
  const {applicationId}=await params;
  const {application,account}=await loadApplication(applicationId);
@@ -34,11 +35,14 @@ export default async function ReviewApplication({params,searchParams}:{params:Pr
    </div>
   </section>
   <section className="store-list-card admin-work-detail" style={{marginTop:18}}>
+   {canReviewApplication(application.status)?<>
    <h2>Review application</h2>
    <p>Choose a decision on this application. This does not change the supplier’s sign-in access or approve any business terms.</p>
    <form className="admin-work-review" action={reviewSupplier}>
     <input type="hidden" name="application_id" value={application.id}/>
     <input type="hidden" name="expected_status" value={application.status}/>
+    <input type="hidden" name="expected_updated_at" value={application.updated_at}/>
+    <input type="hidden" name="expected_reviewed_at" value={application.reviewed_at??""}/>
     <label>Decision<select name="status" required defaultValue="">
      <option value="" disabled>Choose a decision</option>
      <option value="verified">Verify applicant</option>
@@ -49,6 +53,13 @@ export default async function ReviewApplication({params,searchParams}:{params:Pr
     <label>Message to applicant<textarea name="reviewer_feedback" rows={4} maxLength={1000} placeholder="Required for requests, declines, or suspensions"/></label>
     <SubmitButton label="Save decision" pendingLabel="Saving decision..."/>
    </form>
+   </>:<>
+    <h2>{application.status==="needs_info"?"Waiting for supplier details":"Saved review"}</h2>
+    <p>{labels[application.status]??application.status}
+     {application.reviewed_at?<> · <time dateTime={application.reviewed_at}>{new Date(application.reviewed_at).toLocaleString("en-PH",{dateStyle:"medium",timeStyle:"short",timeZone:"Asia/Manila"})} PHT</time></>:null}
+    </p>
+    <p>{application.status==="needs_info"?"This review is read-only until the supplier resubmits.":"This decision is read-only. To change sign-in access, use Account Access."}</p>
+   </>}
   </section>
  </main>;
 }

@@ -1,6 +1,7 @@
 import SubmitButton from "@/app/admin/components/submit-button";
 import Form from "next/form";
 import Link from "next/link";
+import {accountLabels} from "@/lib/portal/config";
 import {loadDirectory,directoryUrl} from "@/lib/admin/directory";
 
 const notices:Record<string,string>={invited:"Supplier invitation sent.",reviewed:"Supplier application decision saved."};
@@ -14,16 +15,22 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
    <p>Find buyers, wholesale suppliers, and lead manufacturers. Manage sign-in access and password recovery.</p></div>
    <div className="store-head-number"><strong>{d.total}</strong><span>accounts found</span></div>
   </header>
+  <div className="ac-account-filter"><Link className="sr-link" href="/admin/supplier-activity/accounts">Account Analysis →</Link>
+   {d.period||d.roles.length?<><span>Cube filters: {[d.period&&("Registered "+d.period),d.roles.map(role=>accountLabels[role]??role).join(", ")].filter(Boolean).join(" · ")}</span>
+    <Link className="sr-link" href={directoryUrl({...d,period:"",roles:[]},1)}>Clear cube filters</Link></>:null}
+  </div>
   {d.error&&<p className="store-message" role="alert">{d.error}</p>}
   {p.error&&<p className="store-message" role="alert">{errors[p.error]??"The request failed."}</p>}
   {p.notice&&<p className="store-message" role="status">{notices[p.notice]??""}</p>}
   <nav className="store-filters-links" aria-label="Account categories">
-   {roles.map(([key,label])=><Link key={key} href={directoryUrl({...d,role:key},1)} aria-current={d.role===key?"page":undefined}>{label}</Link>)}
+   {roles.map(([key,label])=><Link key={key} href={directoryUrl({...d,role:key,roles:[]},1)} aria-current={d.role===key&&!d.roles.length?"page":undefined}>{label}</Link>)}
   </nav>
   <div className="store-board store-account-only">
    <section className="store-list-card"><div className="store-list-heading"><h2>Accounts</h2><span>Page {d.page} of {d.pages}</span></div>
     <Form action="/admin/accounts" className="store-search-form">
      <input type="hidden" name="role" value={d.role}/>
+     {d.roles.length?<input type="hidden" name="roles" value={d.roles.join(",")}/>:null}
+     {d.period?<input type="hidden" name="period" value={d.period}/>:null}
      <label>Search customers or suppliers<input type="search" name="q" maxLength={60} defaultValue={d.q} placeholder="Enter account name"/></label>
      <label>Account access<select name="status" defaultValue={d.status}>
       <option value="all">All accounts</option><option value="active">Can sign in</option><option value="suspended">Suspended</option>

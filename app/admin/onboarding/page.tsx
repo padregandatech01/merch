@@ -17,13 +17,13 @@ export default async function OnboardingQueue({searchParams}:{searchParams:Promi
   {d.error&&<p className="store-message" role="alert">{d.error}</p>}
   {p.notice&&<p className="store-message" role="status">{notices[p.notice]??""}</p>}
   <section className="store-list-card" style={{marginTop:20}}>
-   <div className="admin-work-header"><h2>Application list</h2><span>{d.pending} waiting for action</span></div>
+   <div className="admin-work-header"><h2>Application list</h2><span>{d.pending} waiting for admin review</span></div>
    <Form className="store-search-form admin-work-filter" action="/admin/onboarding">
     <label>Find an applicant<input type="search" name="q" defaultValue={d.q} placeholder="Search legal name" maxLength={60}/></label>
     <label>Review status<select name="status" defaultValue={d.status}>
-     <option value="action">Needs attention</option>
+     <option value="action">Pending or waiting for details</option>
      <option value="all">All applications</option>
-     <option value="pending">New applications</option>
+     <option value="pending">Waiting for admin review</option>
      <option value="needs_info">Waiting for more details</option>
      <option value="verified">Verified applicants</option>
      <option value="rejected">Application declined</option>
@@ -36,7 +36,7 @@ export default async function OnboardingQueue({searchParams}:{searchParams:Promi
      <div><strong>{req.legal_name}</strong>
       <small>{req.organization_name??"Supplier"} · {labels[req.status]??req.status}</small>
       <small>Submitted {new Date(req.created_at).toLocaleDateString("en-PH")}</small></div>
-     <Link className="store-link" href={"/admin/onboarding/"+req.id}>Review application</Link>
+     <Link className="store-link" href={"/admin/onboarding/"+req.id}>{req.status==="pending"?"Review application":"View application"}</Link>
     </article>)}
     {!d.requests.length&&!d.error&&<p>No applications match these filters.</p>}
    </div>
