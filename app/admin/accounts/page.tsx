@@ -1,33 +1,43 @@
 import SubmitButton from "@/app/admin/components/submit-button";
 import Form from "next/form";
 import Link from "next/link";
-import {accountLabels} from "@/lib/portal/config";
+import AccountAnalysis from "@/app/admin/components/account-analysis";
+import {accountCubeFields,accountRoute,inlineCubeUrl,parseInlineCubeView,type CubeParams} from "@/lib/admin/account-cube-model";
+import {loadAccountCube} from "@/lib/admin/account-cube";
+import {accountLabels,customerType,supplierTypes} from "@/lib/portal/config";
 import {loadDirectory,directoryUrl} from "@/lib/admin/directory";
 
 const notices:Record<string,string>={invited:"Supplier invitation sent.",reviewed:"Supplier application decision saved."};
 const errors:Record<string,string>={invalid:"Review the form details.",configuration:"Supplier invitations are not configured.",invite:"Could not send invitation.",profile:"Invitation sent, but supplier account setup needs attention.",database:"Could not save the decision.",protected:"Staff accounts are managed separately.",missing:"Account not found."};
 const roles=[["all","All accounts"],["buyer","Buyers"],["wholesaler","Wholesale suppliers"],["manufacturer","Lead manufacturers"]];
 const roleNames:Record<string,string>={buyer:"Buyer",wholesaler:"Wholesale supplier",manufacturer:"Lead manufacturer"};
-export default async function StoreAccounts({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){
- const p=await searchParams,d=await loadDirectory(p);
+export default async function StoreAccounts({searchParams}:{searchParams:Promise<CubeParams>}){
+ const params=await searchParams;
+ const p=Object.fromEntries(Object.entries(params).filter((entry):entry is [string,string]=>typeof entry[1]==="string"));
+ const view=parseInlineCubeView(params,[customerType,...supplierTypes]);
+ const [d,cells]=await Promise.all([loadDirectory(p),loadAccountCube()]);
+ const recordUrl=(data:Parameters<typeof directoryUrl>[0],page:number)=>inlineCubeUrl(view,directoryUrl(data,page),"account-records");
+ const listUrl=directoryUrl(d,d.page);
+ const listFilters=[d.q&&("Name: "+d.q),d.role!=="all"?(accountLabels[d.role]??d.role):d.roles.map(role=>accountLabels[role]??role).join(", "),d.period&&("Registered "+d.period),d.status==="active"?"Not suspended":d.status==="suspended"?"Suspended":""].filter(Boolean);
  return <main className="store-accounts">
   <header className="store-heading"><div><span className="store-label">STORE OPERATIONS / PEOPLE</span><h1>Account Access</h1>
    <p>Find buyers, wholesale suppliers, and lead manufacturers. Manage sign-in access and password recovery.</p></div>
    <div className="store-head-number"><strong>{d.total}</strong><span>accounts found</span></div>
   </header>
-  <div className="ac-account-filter"><Link className="sr-link" href="/admin/supplier-activity/accounts">Account Analysis →</Link>
-   {d.period||d.roles.length?<><span>Cube filters: {[d.period&&("Registered "+d.period),d.roles.map(role=>accountLabels[role]??role).join(", ")].filter(Boolean).join(" · ")}</span>
-    <Link className="sr-link" href={directoryUrl({...d,period:"",roles:[]},1)}>Clear cube filters</Link></>:null}
-  </div>
+  <AccountAnalysis view={view} cells={cells} listUrl={listUrl}/>
+  <div id="account-records" tabIndex={-1}>
+  {listFilters.length?<div className="ac-account-filter"><span>Account list filters: {listFilters.join(" · ")}</span>
+   <Link className="sr-link" href={recordUrl({q:"",role:"all",roles:[],period:"",status:"all"},1)}>Clear list filters</Link></div>:null}
   {d.error&&<p className="store-message" role="alert">{d.error}</p>}
   {p.error&&<p className="store-message" role="alert">{errors[p.error]??"The request failed."}</p>}
   {p.notice&&<p className="store-message" role="status">{notices[p.notice]??""}</p>}
   <nav className="store-filters-links" aria-label="Account categories">
-   {roles.map(([key,label])=><Link key={key} href={directoryUrl({...d,role:key,roles:[]},1)} aria-current={d.role===key&&!d.roles.length?"page":undefined}>{label}</Link>)}
+   {roles.map(([key,label])=><Link key={key} href={recordUrl({...d,role:key,roles:[]},1)} aria-current={d.role===key&&!d.roles.length?"page":undefined}>{label}</Link>)}
   </nav>
   <div className="store-board store-account-only">
    <section className="store-list-card"><div className="store-list-heading"><h2>Accounts</h2><span>Page {d.page} of {d.pages}</span></div>
-    <Form action="/admin/accounts" className="store-search-form">
+    <Form action={accountRoute+"#account-records"} key={listUrl} className="store-search-form">
+     {Array.from(accountCubeFields(view),([name,value])=><input type="hidden" key={name} name={name} value={value}/>)}
      <input type="hidden" name="role" value={d.role}/>
      {d.roles.length?<input type="hidden" name="roles" value={d.roles.join(",")}/>:null}
      {d.period?<input type="hidden" name="period" value={d.period}/>:null}
@@ -43,17 +53,18 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
       <td><strong>{person.display_name}</strong></td>
       <td>{roleNames[person.account_type]??person.account_type}</td>
       <td><span className={"store-state "+(person.status==="active"?"is-active":"is-suspended")}>{person.status==="active"?"Allowed":"Suspended"}</span></td>
-      <td>{new Date(person.created_at).toLocaleDateString("en-PH")}</td>
+      <td>{new Date(person.created_at).toLocaleDateString("en-PH",{timeZone:"Asia/Manila"})}</td>
       <td><Link className="store-link" href={"/admin/accounts/"+person.user_id}>Manage account</Link></td>
      </tr>)}</tbody>
     </table></div>
     {!d.people.length&&!d.error&&<p className="store-muted">No accounts match your filters.</p>}
     <div className="store-pages">
-     {d.page>1?<Link href={directoryUrl(d,d.page-1)}>Previous</Link>:<span/>}<span>{d.page} / {d.pages}</span>
-     {d.page<d.pages?<Link href={directoryUrl(d,d.page+1)}>Next</Link>:<span/>}
+     {d.page>1?<Link href={recordUrl(d,d.page-1)}>Previous</Link>:<span/>}<span>{d.page} / {d.pages}</span>
+     {d.page<d.pages?<Link href={recordUrl(d,d.page+1)}>Next</Link>:<span/>}
     </div>
    </section>
    
+  </div>
   </div>
  </main>;
 }

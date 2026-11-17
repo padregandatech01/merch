@@ -18,4 +18,4 @@ Counts use exact database counts, not the length of a paginated list. An unavail
 
 Run `node --test tests/supplier-activity.test.mjs` with Node.js 22.18+ or 24. As a department admin, open the report from the sidebar or home. Compare counts with the linked filtered lists, including zero-count views. Confirm signed-out visitors are redirected to login.
 
-For multidimensional account reporting, open **Account Analysis** and follow [the Loxada BI standard](bi-standard.md).
+For multidimensional account reporting, open **Account Analysis** within Account Access and follow [the Loxada BI standard](bi-standard.md).
