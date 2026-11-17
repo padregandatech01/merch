@@ -104,6 +104,15 @@
 .ac-types{display:flex;gap:8px 16px;flex-wrap:wrap;margin-top:12px}
 .ac-types label{display:flex;align-items:center}
 .ac-types input{width:auto}
-.ac-drills{margin:10px 0}
+.ac-drills{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
 .ac-table th,.ac-table td{white-space:nowrap}
 .ac-account-filter{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-block:12px}
+
+.ac-inline.sr-shell{margin:0 0 18px;max-width:none;padding:0;min-height:0;background:transparent}
+.ac-inline .ac-panel{margin:0}
+#account-analysis,#account-records{scroll-margin-top:20px}
+.ac-control{display:inline-flex;align-items:center;min-height:40px;padding:6px 11px;border:1px solid var(--sr-accent);border-radius:7px;background:var(--sr-soft);color:var(--sr-text);font-size:13px;font-weight:700;text-decoration:none}
+.ac-control:hover{text-decoration:underline;text-underline-offset:3px}
+.ac-control:focus-visible,.ac-filter-panel summary:focus-visible{outline:2px solid var(--sr-accent);outline-offset:2px}
+.ac-filter-panel summary{width:fit-content;max-width:100%;cursor:pointer;font-size:13px;font-weight:700;color:var(--sr-accent);padding:6px 0}
+.ac-filter-panel .sr-actions{align-items:center}
