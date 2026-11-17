@@ -11,7 +11,7 @@
 2. A Supabase Auth invitation initiates a provisional account; the message is saved as the first private conversation record. The temporary identity has no supplier application privileges.
 3. Contact opens a verified invitation, sets a password, visits `/invitation`, exchanges messages with the department, and accepts or declines.
 4. If accepted, the contact may retain the invited login email or request a different verified email. Once verified, `Finish account setup` marks the relationship completed; the *same* auth user ID and conversation history remain.
-5. The permanent portal at `/portal` is used to submit business qualification details; applications are reviewed separately under **Supplier Applications** (`/admin/onboarding`). Verification does **not** grant licensing, title, stock, or contracting rights.
+5. The permanent supplier panel at `/portal` shows the next application action, private Messages, and sign-in details. Suppliers submit or review their application at `/portal/application`; applications are reviewed separately under **Supplier Applications** (`/admin/onboarding`). Verification does **not** grant licensing, title, stock, or contracting rights.
 6. Admin tracks invitations and messages under **Supplier Invitations & Messages** (`/admin/relations`); neither party can view other supplier conversations. Relational records and messages are append-only to the ordinary user API.
 
 ## Hosted Supabase Auth setup
@@ -49,6 +49,7 @@ The invitation form stores the message on-platform regardless of the email templ
 Run the error-mapping regression tests with Node.js 22.18+ or Node.js 24 using `node --test tests/supplier-invite.test.mjs`.
 
 ## Acceptance checklist
+- Fully set-up suppliers see their role-specific overview, their own application and their private conversation when available. The first independent-author application opens the conversation. Customers do not see supplier tools and provisional suppliers remain in the invitation workspace.
 - Open the same private thread as admin and supplier. Replies and decision notices appear without a manual reload. Reload both tabs to confirm the notices persist. Change connection state and return to the thread to check catch-up.
 - Admin sends a real invitation with a 40+ character introduction; invited contact receives the customized email and access link.
 - Invitee sets password, accesses only their invitation, exchanges messages, accepts/declines, and is not able to submit an application until account completion.
