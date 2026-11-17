@@ -1,39 +1,55 @@
 export type Axis="account"|"status"|"time";
-export type AccountStatus="active"|"suspended";
+export type AccountStatus="active"|"suspended"|"not_tracked";
+export type TimeLevel="year"|"quarter"|"month";
+export const adminRole="dept_admin";
+export const accountGroups=[["all","All groups"],["customers","Users"],["admins","Department admins"],["suppliers","Suppliers"]] as const;
+export const timeLevels=[["year","Year"],["quarter","Quarter"],["month","Month"]] as const;
+type AccountGroup=(typeof accountGroups)[number][0];
 export type AccountCell={account_type:string;status:AccountStatus;month:string;total:number};
-export type CubeView={row:Axis;col:Axis;accountLevel:"group"|"type";timeLevel:"year"|"month";roles:string[];status:AccountStatus|"";period:string};
+export type CubeView={row:Axis;col:Axis;accountLevel:"group"|"type";timeLevel:TimeLevel;group:AccountGroup;roles:string[];status:AccountStatus|"";period:string};
 export type CubeParams=Record<string,string|string[]|undefined>;
 export const accountRoute="/admin/accounts";
-export const axes=[["account","Account"],["status","Access status"],["time","Registration date"]] as const;
+export const axes=[["account","Account"],["status","Access status"],["time","Account date"]] as const;
 
 export function accountRoles(value:string|string[]|undefined,allowed:readonly string[]){
  const requested=new Set((Array.isArray(value)?value:value?[value]:[]).flatMap(v=>v.split(",")));
  return allowed.filter(role=>requested.has(role));
 }
 export function accountPeriod(value:unknown):string{
- return typeof value==="string"&&/^(?:19|20|21)\d{2}(?:-(?:0[1-9]|1[0-2]))?$/.test(value)?value:"";
+ return typeof value==="string"&&/^(?:19|20|21)\d{2}(?:-(?:0[1-9]|1[0-2]|Q[1-4]))?$/.test(value)?value:"";
 }
+export const toQuarter=(month:string)=>month.slice(0,4)+"-Q"+Math.ceil(Number(month.slice(5))/3);
+export const periodDepth=(period:string)=>!period?0:period.length===4?1:period.includes("-Q")?2:3;
 export function periodBounds(value:string){
  const period=accountPeriod(value);
  if(!period)return null;
- const [year,month]=period.split("-").map(Number);
- const utc=(y:number,m:number)=>new Date(Date.UTC(y,m,1)-8*3_600_000).toISOString();
- return {from:utc(year,month?month-1:0),to:month?utc(year,month):utc(year+1,0)};
+ const [yearText,part]=period.split("-");
+ const year=Number(yearText),quarter=part?.startsWith("Q");
+ const firstMonth=!part?0:quarter?(Number(part[1])-1)*3:Number(part)-1;
+ const utc=(m:number)=>new Date(Date.UTC(year,m,1)-8*3_600_000).toISOString();
+ return {from:utc(firstMonth),to:utc(firstMonth+(!part?12:quarter?3:1))};
+}
+const phMonth=new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Manila",year:"numeric",month:"2-digit"});
+export function manilaMonth(date:Date){
+ const parts=phMonth.formatToParts(date);
+ return parts.find(part=>part.type==="year")?.value+"-"+parts.find(part=>part.type==="month")?.value;
 }
 const isAxis=(v:unknown):v is Axis=>axes.some(([key])=>v===key);
 export function parseCubeView(params:CubeParams,roles:readonly string[]):CubeView{
- const row=isAxis(params.row)?params.row:"account";
- const col=isAxis(params.col)&&params.col!==row?params.col:row==="status"?"account":"status";
- return {row,col,accountLevel:params.accountLevel==="type"?"type":"group",
-  timeLevel:params.timeLevel==="month"?"month":"year",roles:accountRoles(params.roles,roles),
-  status:params.status==="active"||params.status==="suspended"?params.status:"",period:accountPeriod(params.period)};
+ const row=isAxis(params.row)?params.row:"time";
+ const col=isAxis(params.col)&&params.col!==row?params.col:row==="account"?"status":"account";
+ const group=accountGroups.find(([key])=>key===params.group)?.[0]??"all";
+ return {row,col,group,accountLevel:params.accountLevel==="type"?"type":"group",
+  timeLevel:params.timeLevel==="month"||params.timeLevel==="quarter"?params.timeLevel:"year",roles:accountRoles(params.roles,roles),
+  status:params.status==="active"||params.status==="suspended"||params.status==="not_tracked"?params.status:"",period:accountPeriod(params.period)};
 }
 export function parseInlineCubeView(params:CubeParams,roles:readonly string[]):CubeView{
- return parseCubeView({...params,roles:params.cubeRoles,status:params.cubeStatus,period:params.cubePeriod},roles);
+ return parseCubeView({...params,group:params.cubeGroup,roles:params.cubeRoles,status:params.cubeStatus,period:params.cubePeriod},[...roles,adminRole]);
 }
 
 export function accountCubeFields(view:CubeView){
  const p=new URLSearchParams({row:view.row,col:view.col,accountLevel:view.accountLevel,timeLevel:view.timeLevel});
+ if(view.group!=="all")p.set("cubeGroup",view.group);
  if(view.roles.length)p.set("cubeRoles",view.roles.join(","));
  if(view.status)p.set("cubeStatus",view.status);
  if(view.period)p.set("cubePeriod",view.period);
@@ -49,29 +65,36 @@ export function inlineCubeUrl(view:CubeView,listUrl=accountRoute,section:"accoun
  accountCubeFields(view).forEach((value,name)=>p.set(name,value));
  return accountRoute+"?"+p.toString()+"#"+section;
 }
-export function registrationView(view:CubeView):CubeView{
- if(view.row==="time"||view.col==="time")return view;
- return {...view,row:"time",col:view.row==="account"?"account":view.col,timeLevel:"year"};
-}
-const inPeriod=(month:string,period:string)=>!period||month===period||month.slice(0,4)===period;
+export const groupForRole=(role:string,customer:string)=>role===customer?"customers":role===adminRole?"admins":"suppliers";
+const inPeriod=(month:string,period:string)=>!period||month===period||month.slice(0,4)===period||toQuarter(month)===period;
+const bucketFor=(month:string,level:TimeLevel)=>level==="month"?month:level==="quarter"?toQuarter(month):month.slice(0,4);
+export const viewRoles=(view:CubeView,allowed:readonly string[],customer:string)=>
+ allowed.filter(role=>(!view.roles.length||view.roles.includes(role))&&(view.group==="all"||groupForRole(role,customer)===view.group));
 export function buildAccountMatrix(cells:AccountCell[],view:CubeView,allowed:readonly string[],customer:string){
- const roles=view.roles.length?view.roles:allowed;
+ const roles=viewRoles(view,allowed,customer);
  const filtered=cells.filter(cell=>roles.includes(cell.account_type)&&(!view.status||cell.status===view.status)&&inPeriod(cell.month,view.period));
  const key=(dimension:Axis,cell:AccountCell)=>{
   switch(dimension){
-   case "account":return view.accountLevel==="type"?cell.account_type:cell.account_type===customer?"customers":"suppliers";
+   case "account":return view.accountLevel==="type"?cell.account_type:groupForRole(cell.account_type,customer);
    case "status":return cell.status;
-   case "time":return view.timeLevel==="month"?cell.month:cell.month.slice(0,4);
+   case "time":return bucketFor(cell.month,view.timeLevel);
   }
  };
  const keys=(axis:Axis)=>{
-  if(axis==="account"){
-   return view.accountLevel==="type"?roles:[...(roles.includes(customer)?["customers"]:[]),...(roles.some(role=>role!==customer)?["suppliers"]:[])];
+  if(axis==="account")return view.accountLevel==="type"?roles:[...new Set(roles.map(role=>groupForRole(role,customer)))];
+  if(axis==="status"){
+   if(view.status)return [view.status];
+   return [...(roles.some(role=>role!==adminRole)?["active","suspended"]:[]),...(roles.includes(adminRole)?["not_tracked"]:[])];
   }
-  if(axis==="status")return view.status?[view.status]:["active","suspended"];
-  const times=new Set(filtered.map(cell=>key(axis,cell)));
-  if(view.period&&(view.timeLevel==="year"||view.period.length===7))times.add(view.timeLevel==="year"?view.period.slice(0,4):view.period);
-  return [...times].sort().reverse();
+  if(view.period){
+   const year=view.period.slice(0,4),level=view.timeLevel,depth=periodDepth(view.period);
+   if(level==="year")return [year];
+   if(level==="quarter")return depth>=2?[depth===2?view.period:toQuarter(view.period)]:[1,2,3,4].map(q=>year+"-Q"+q);
+   if(depth===3)return [view.period];
+   const first=depth===2?(Number(view.period[6])-1)*3+1:1;
+   return Array.from({length:depth===2?3:12},(_,i)=>year+"-"+String(first+i).padStart(2,"0"));
+  }
+  return [...new Set(cells.filter(cell=>roles.includes(cell.account_type)).map(cell=>key(axis,cell)))].sort().reverse();
  };
  const rows=keys(view.row),columns=keys(view.col);
  const counts=new Map<string,Map<string,number>>(),rowTotals=new Map<string,number>(),columnTotals=new Map<string,number>();
@@ -87,16 +110,19 @@ export function buildAccountMatrix(cells:AccountCell[],view:CubeView,allowed:rea
 }
 
 export function accountDetailUrl(view:CubeView,row:string,col:string,allowed:readonly string[],customer:string){
- let roles=[...(view.roles.length?view.roles:allowed)],status=view.status,period=view.period;
+ let roles=viewRoles(view,allowed,customer),status=view.status,period=view.period;
  const apply=(axis:Axis,value:string)=>{
-  if(axis==="account")roles=roles.filter(role=>view.accountLevel==="type"?role===value:(role===customer?"customers":"suppliers")===value);
-  if(axis==="status"&&(value==="active"||value==="suspended"))status=value;
-  if(axis==="time"&&(!period||period.length<value.length))period=value;
+  if(axis==="account")roles=roles.filter(role=>view.accountLevel==="type"?role===value:groupForRole(role,customer)===value);
+  if(axis==="status"&&(value==="active"||value==="suspended"||value==="not_tracked"))status=value;
+  if(axis==="time"&&periodDepth(period)<periodDepth(value))period=value;
  };
  apply(view.row,row);apply(view.col,col);
+ if(status==="active"||status==="suspended")roles=roles.filter(role=>role!==adminRole);
+ if(status==="not_tracked"||roles.includes(adminRole)||!roles.length)return null;
+ const portalRoles=allowed.filter(role=>role!==adminRole);
  const p=new URLSearchParams();
  if(roles.length===1)p.set("role",roles[0]);
- else if(roles.length<allowed.length&&roles.length>0)p.set("roles",roles.join(","));
+ else if(roles.length<portalRoles.length)p.set("roles",roles.join(","));
  if(status)p.set("status",status);
  if(period)p.set("period",period);
  return accountRoute+(p.size?"?"+p.toString():"");
