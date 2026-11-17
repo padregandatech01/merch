@@ -57,3 +57,21 @@
 .sr-live-state{font-size:12px;color:var(--sr-muted)}
 .sr-system-notice{align-self:center;display:flex;flex-wrap:wrap;justify-content:center;gap:4px 12px;padding:6px 12px;max-width:100%;border:1px solid var(--sr-border);border-radius:12px;background:var(--sr-soft);color:var(--sr-text);font-size:13px;text-align:center}
 .sr-system-notice time{color:var(--sr-muted);font-size:11px;align-self:center}
+
+/* Department supplier BI uses the existing supplier workspace theme. */
+.sa-as-of,.sa-hint{color:var(--sr-muted);font-size:12px}
+.sa-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,215px),1fr));gap:12px;margin-top:14px;list-style:none;padding:0}
+.sa-metric{display:grid;align-content:start;gap:5px;min-height:100%;padding:14px;border:1px solid var(--sr-border);border-radius:8px;background:var(--sr-bg);overflow-wrap:anywhere}
+.sa-metric:hover strong,.sa-metric:focus-visible strong{text-decoration:underline;text-underline-offset:4px}
+.sa-metric:focus-visible,.sa-table a:focus-visible{outline:2px solid var(--sr-accent);outline-offset:2px}
+.sa-number,.sa-intake dd{font-size:clamp(17px,3vw,28px);font-weight:750;font-variant-numeric:tabular-nums;color:var(--sr-accent)}
+.sa-intake{margin-top:16px;padding-top:14px;border-top:1px solid var(--sr-border)}
+.sa-intake h3{font-weight:700}
+.sa-intake dl{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:8px}
+.sa-intake dt{font-size:13px;color:var(--sr-muted)}
+.sa-table-wrap{overflow-x:auto;margin-top:14px}
+.sa-table{width:100%;border-collapse:collapse;font-size:14px}
+.sa-table th,.sa-table td{border-bottom:1px solid var(--sr-border);padding:9px 8px;text-align:right;vertical-align:top}
+.sa-table th:first-child{text-align:left}
+.sa-table tfoot{background:var(--sr-soft)}
+@media(max-width:500px){.sa-table{font-size:12px}.sa-table th,.sa-table td{padding:8px 5px}}
