@@ -18,21 +18,21 @@ export default async function RelationDetail({params,searchParams}:{
  const isOpen=["invited","discussing","accepted"].includes(r.status);
  const canReopen=["declined","revoked"].includes(r.status);
  return <main className="sr-shell" data-dept={departmentId}>
-  <Link className="sr-back" href="/admin/relations">← Supplier relationships</Link>
+  <Link className="sr-back" href="/admin/relations">← Back to Supplier Invitations &amp; Messages</Link>
   <header className="sr-top" style={{marginTop:18}}><div>
-    <span className="sr-kicker">{departmentName} / Contact workspace</span><h1>{r.invited_email}</h1>
+    <span className="sr-kicker">{departmentName} / Supplier conversation</span><h1>{r.invited_email}</h1>
     <p>{accountLabels[r.supplier_type]??r.supplier_type} · {stages[r.status]??r.status}</p>
    </div><span className="sr-chip">{stages[r.status]??r.status}</span>
   </header>
   {p.error&&<p role="alert" className="sr-alert">{errors[p.error]??"This action could not be completed."}</p>}
-  {p.notice&&<p role="status" className="sr-alert">{p.notice==="invited"?"Invitation initiated and initial message recorded.":"Relationship updated."}</p>}
+  {p.notice&&<p role="status" className="sr-alert">{p.notice==="invited"?"Invitation sent and conversation started.":p.notice==="revoked"?"Invitation revoked.":p.notice==="discussing"?"Conversation reopened.":p.notice==="read"?"Conversation marked as read.":"Conversation updated."}</p>}
   <section className="sr-card">
-   <h2>Supplier record</h2>
+   <h2>Invitation and account details</h2>
    <dl className="sr-facts">
-    <div><dt>Invited email</dt><dd>{r.invited_email}</dd></div>
-    <div><dt>Account stage</dt><dd>{stages[r.status]??r.status}</dd></div>
-    <div><dt>Supplier category</dt><dd>{accountLabels[r.supplier_type]??r.supplier_type}</dd></div>
-    <div><dt>Contact created</dt><dd>{new Date(r.created_at).toLocaleDateString("en-PH")}</dd></div>
+    <div><dt>Contact email</dt><dd>{r.invited_email}</dd></div>
+    <div><dt>Invitation or account status</dt><dd>{stages[r.status]??r.status}</dd></div>
+    <div><dt>Supplier type</dt><dd>{accountLabels[r.supplier_type]??r.supplier_type}</dd></div>
+    <div><dt>Conversation opened</dt><dd>{new Date(r.created_at).toLocaleDateString("en-PH")}</dd></div>
     {r.requested_email&&<div><dt>Requested permanent email</dt><dd>{r.requested_email}</dd></div>}
    </dl>
    <div className="sr-actions">
@@ -46,7 +46,7 @@ export default async function RelationDetail({params,searchParams}:{
      <SubmitButton label="Reopen conversation" pendingLabel="Reopening..."/>
     </form>}
    </div>
-   <p className="sr-note">Account verification, licensing rights and commercial contracts are separate decisions.</p>
+   <p className="sr-note">Accepting an invitation is separate from submitting a supplier application. Neither approves a contract.</p>
   </section>
   <SupplierConversation relation={r} thread={thread} viewer="admin" baseUrl={"/admin/relations/"+r.id}/>
  </main>;

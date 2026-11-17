@@ -1,12 +1,18 @@
 # Supplier relationships — Merchandise
 
+## Department admin navigation
+
+- **Supplier Invitations & Messages** handles email invitations, responses, and private conversations.
+- **Supplier Applications** is for reviewing forms suppliers have submitted.
+- **Account Access** is for sign-in, suspension, and password recovery.
+
 ## Workflow
-1. Admin chooses **Onboarding → Invite**, enters a real contact and supplier type, and writes a message of 40–3000 characters.
+1. Admin opens **Supplier Invitations & Messages** and chooses **Invite a supplier**, enters a real contact and supplier type, and writes a message of 40–3000 characters.
 2. A Supabase Auth invitation initiates a provisional account; the message is saved as the first private conversation record. The temporary identity has no supplier application privileges.
 3. Contact opens a verified invitation, sets a password, visits `/invitation`, exchanges messages with the department, and accepts or declines.
 4. If accepted, the contact may retain the invited login email or request a different verified email. Once verified, `Finish account setup` marks the relationship completed; the *same* auth user ID and conversation history remain.
-5. The permanent portal at `/portal` is used to submit business qualification details; applications at `/admin/onboarding` are reviewed separately. Verification does **not** grant licensing, title, stock, or contracting rights.
-6. Admin manages relationships at `/admin/relations`; neither party can view other supplier conversations. Relational records and messages are append-only to the ordinary user API.
+5. The permanent portal at `/portal` is used to submit business qualification details; applications are reviewed separately under **Supplier Applications** (`/admin/onboarding`). Verification does **not** grant licensing, title, stock, or contracting rights.
+6. Admin tracks invitations and messages under **Supplier Invitations & Messages** (`/admin/relations`); neither party can view other supplier conversations. Relational records and messages are append-only to the ordinary user API.
 
 ## Hosted Supabase Auth setup
 Repository files are not automatically applied to hosted Auth. Configure the matching Supabase project before sending invitations.
@@ -48,6 +54,6 @@ Run the error-mapping regression tests with Node.js 22.18+ or Node.js 24 using `
 - Invitee sets password, accesses only their invitation, exchanges messages, accepts/declines, and is not able to submit an application until account completion.
 - Admin cannot read messages from another department. A supplier cannot access another relationship by changing its UUID.
 - Existing email → Finish account setup; alternate email → confirm email change first → Finish. Confirm same account ID and message history in both cases.
-- Supplier application submitted after completion appears in **Onboarding**, not the **Accounts** list, and does not auto-approve business activities.
+- Supplier application submitted after completion appears under **Supplier Applications**, not **Account Access**, and does not auto-approve business activities.
 - Account suspension prevents supplier API access; revoked/declined contacts cannot send new messages.
 - Browser/phone screen tests confirm responsive layout, accessible form labels, clear error states, and navigation without unexpected document reloads.

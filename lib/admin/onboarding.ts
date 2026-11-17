@@ -26,7 +26,7 @@ export async function loadOnboarding(params:Record<string,string|undefined>):Pro
  const n=Number(params.page??"1"),page=Number.isSafeInteger(n)&&n>=1&&n<=10000?n:1;
  const empty=(error:string):OnboardingQueue=>({q,status,page,pages:1,total:0,pending:0,requests:[],error});
  const db=createAdminClient();
- if(!db)return empty("Partner onboarding is not configured.");
+ if(!db)return empty("Supplier application review is not configured.");
  let query=db.from("supplier_applications")
   .select("id,user_id,legal_name,organization_name,contact_email,capability_statement,status,reviewer_feedback,created_at,updated_at,reviewed_at",{count:"exact"})
   .order("created_at",{ascending:false});

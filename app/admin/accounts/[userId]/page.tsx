@@ -11,7 +11,7 @@ export default async function StoreAccount({params,searchParams}:{params:Promise
  const {account,authUser,history,application}=await loadAccount(userId);
  const p=await searchParams;
  return <main className="store-detail">
-  <Link href="/admin/accounts" className="store-link">← Back to customers &amp; suppliers</Link>
+  <Link href="/admin/accounts" className="store-link">← Back to Account Access</Link>
   <header className="store-detail-head"><div><span className="store-label">STORE ACCOUNT RECORD</span><h1>{account.display_name}</h1>
     <p>{labels[account.account_type]??account.account_type} · {authUser?.email??"Email unavailable"}</p></div>
    <span className={"store-state "+(account.status==="active"?"is-active":"is-suspended")}>{account.status==="active"?"Can sign in":"Suspended"}</span>
@@ -20,7 +20,7 @@ export default async function StoreAccount({params,searchParams}:{params:Promise
   {p.error&&<p className="store-message" role="alert">{errors[p.error]??"Could not complete the action."}</p>}
   <div className="store-detail-grid">
    <section className="store-record-sheet">
-    <h2>Customer or supplier details</h2>
+    <h2>Account details</h2>
     <dl className="store-facts"><div><dt>Account type</dt><dd>{labels[account.account_type]??account.account_type}</dd></div>
       <div><dt>Joined</dt><dd>{new Date(account.created_at).toLocaleDateString("en-PH")}</dd></div>
       <div><dt>Email address</dt><dd>{authUser?.email_confirmed_at?"Verified":"Not verified"}</dd></div>

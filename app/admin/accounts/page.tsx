@@ -10,8 +10,8 @@ const roleNames:Record<string,string>={buyer:"Buyer",wholesaler:"Wholesale suppl
 export default async function StoreAccounts({searchParams}:{searchParams:Promise<Record<string,string|undefined>>}){
  const p=await searchParams,d=await loadDirectory(p);
  return <main className="store-accounts">
-  <header className="store-heading"><div><span className="store-label">STORE OPERATIONS / PEOPLE</span><h1>Customers &amp; suppliers</h1>
-   <p>Find buyers, wholesale suppliers, and manufacturers; manage sign-in access and account recovery.</p></div>
+  <header className="store-heading"><div><span className="store-label">STORE OPERATIONS / PEOPLE</span><h1>Account Access</h1>
+   <p>Find buyers, wholesale suppliers, and lead manufacturers. Manage sign-in access and password recovery.</p></div>
    <div className="store-head-number"><strong>{d.total}</strong><span>accounts found</span></div>
   </header>
   {d.error&&<p className="store-message" role="alert">{d.error}</p>}
@@ -21,7 +21,7 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
    {roles.map(([key,label])=><Link key={key} href={directoryUrl({...d,role:key},1)} aria-current={d.role===key?"page":undefined}>{label}</Link>)}
   </nav>
   <div className="store-board store-account-only">
-   <section className="store-list-card"><div className="store-list-heading"><h2>Account list</h2><span>Page {d.page} of {d.pages}</span></div>
+   <section className="store-list-card"><div className="store-list-heading"><h2>Accounts</h2><span>Page {d.page} of {d.pages}</span></div>
     <Form action="/admin/accounts" className="store-search-form">
      <input type="hidden" name="role" value={d.role}/>
      <label>Search customers or suppliers<input type="search" name="q" maxLength={60} defaultValue={d.q} placeholder="Enter account name"/></label>
@@ -37,7 +37,7 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
       <td>{roleNames[person.account_type]??person.account_type}</td>
       <td><span className={"store-state "+(person.status==="active"?"is-active":"is-suspended")}>{person.status==="active"?"Allowed":"Suspended"}</span></td>
       <td>{new Date(person.created_at).toLocaleDateString("en-PH")}</td>
-      <td><Link className="store-link" href={"/admin/accounts/"+person.user_id}>Manage</Link></td>
+      <td><Link className="store-link" href={"/admin/accounts/"+person.user_id}>Manage account</Link></td>
      </tr>)}</tbody>
     </table></div>
     {!d.people.length&&!d.error&&<p className="store-muted">No accounts match your filters.</p>}
