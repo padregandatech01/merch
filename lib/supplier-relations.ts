@@ -12,8 +12,8 @@ export type Relationship={
 };
 export type RelationMessage={id:string;relationship_id:string;sender_user_id:string|null;sender_kind:"admin"|"supplier"|"system";body:string;created_at:string};
 export const stages:Record<string,string>={
- invited:"Invited",discussing:"In conversation",accepted:"Accepted — account setup",
- completed:"Full account",declined:"Declined",revoked:"Invitation revoked"
+ invited:"Invitation sent",discussing:"In discussion",accepted:"Invitation accepted — setup pending",
+ completed:"Account setup complete",declined:"Invitation declined",revoked:"Invitation revoked"
 };
 export async function requireSupplierIdentity(){
  if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)redirect("/login?error=configuration");
@@ -56,7 +56,7 @@ export async function getAdminRelations(params:Record<string,string|undefined>){
  if(status!=="all")query=query.eq("status",status);
  const {data,error,count}=await query.range((page-1)*15,page*15-1);
  return {rows:(data??[]) as Relationship[],q,status,page,pages:Math.max(1,Math.ceil((count??0)/15)),
- total:count??0,error:error?"Unable to load supplier relationships.":null};
+ total:count??0,error:error?"Unable to load supplier invitations and messages.":null};
 }
 export function relationsUrl(q:string,status:string,page:number){
  const p=new URLSearchParams();
