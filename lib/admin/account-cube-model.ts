@@ -63,6 +63,7 @@ export function accountListFields(listUrl:string){
 export function inlineCubeUrl(view:CubeView,listUrl=accountRoute,section:"account-analysis"|"account-records"="account-analysis"){
  const p=accountListFields(listUrl);
  accountCubeFields(view).forEach((value,name)=>p.set(name,value));
+ if(section==="account-analysis")p.set("view","analysis");
  return accountRoute+"?"+p.toString()+"#"+section;
 }
 export const groupForRole=(role:string,customer:string)=>role===customer?"customers":role===adminRole?"admins":"suppliers";

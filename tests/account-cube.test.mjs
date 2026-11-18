@@ -52,6 +52,7 @@ test("account records and inline analysis retain independent URL filters",()=>{
  const target=new URL(inlineCubeUrl(changed,list),"https://example.com");
  assert.equal(target.pathname,"/admin/accounts");
  assert.equal(target.hash,"#account-analysis");
+ assert.equal(target.searchParams.get("view"),"analysis");
  assert.equal(target.searchParams.get("q"),"A&B");
  assert.equal(target.searchParams.get("page"),"2");
  assert.equal(target.searchParams.get("status"),"suspended");
@@ -59,6 +60,7 @@ test("account records and inline analysis retain independent URL filters",()=>{
  assert.deepEqual(parseInlineCubeView(Object.fromEntries(target.searchParams),roles),changed);
  const details=new URL(inlineCubeUrl(changed,accountDetailUrl(changed,"creator","2026-10",roles,customer),"account-records"),"https://example.com");
  assert.equal(details.hash,"#account-records");
+ assert.equal(details.searchParams.has("view"),false);
  assert.equal(details.searchParams.get("role"),"creator");
  assert.equal(details.searchParams.get("period"),"2026-10");
  assert.equal(details.searchParams.get("status"),"active");

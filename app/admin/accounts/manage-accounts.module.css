@@ -1,0 +1,240 @@
+.workspace {
+  --surface: #fffdf8;
+  --text: #2b251f;
+  --muted: #66564a;
+  --line: #d9caba;
+  --wash: #f5eee3;
+  --accent: #91382e;
+  --accent-text: #fff;
+  width: min(100%, 70rem);
+  min-width: 0;
+  margin-inline: auto;
+  padding: clamp(1rem, 3vw, 2.25rem) 0;
+  color: var(--text);
+}
+
+.workspace[data-dept="anime"] {
+  --surface: #1c2232;
+  --text: #f5f4fd;
+  --muted: #c5c4d9;
+  --line: #444b62;
+  --wash: #262c40;
+  --accent: #b9afff;
+  --accent-text: #211747;
+}
+
+.workspace[data-dept="merch"] {
+  --surface: #fff;
+  --text: #192e27;
+  --muted: #465e53;
+  --line: #cad8d0;
+  --wash: #edf4ef;
+  --accent: #216344;
+}
+
+.heading h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 4vw, 2.75rem);
+  font-weight: 750;
+  letter-spacing: -.035em;
+  line-height: 1.15;
+}
+
+.views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .25rem .75rem;
+  margin-block: 1rem 1.25rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.views a {
+  border-bottom: 3px solid transparent;
+  padding: .7rem .35rem;
+  color: var(--muted);
+  font-size: .95rem;
+  font-weight: 650;
+}
+
+.views a[aria-current="page"] {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: .75rem;
+  overflow: clip;
+  scroll-margin-top: 1rem;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr)) auto;
+  align-items: end;
+  gap: .75rem;
+  padding: 1rem;
+}
+
+.filters label {
+  display: grid;
+  min-width: 0;
+  gap: .35rem;
+  font-size: .9rem;
+  font-weight: 650;
+}
+
+.filters :is(input, select, button) {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: .55rem .7rem;
+  border: 1px solid var(--line);
+  border-radius: .45rem;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+
+.filters input::placeholder {
+  color: var(--muted);
+}
+
+.filters button {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 700;
+}
+
+.filters button:disabled {
+  opacity: .7;
+}
+
+.resultBar,
+.pagination {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .45rem 1rem;
+  padding: .75rem 1rem;
+  background: var(--wash);
+  color: var(--muted);
+  font-size: .875rem;
+}
+
+.resultBar strong {
+  color: var(--text);
+}
+
+.resultBar a,
+.pagination a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: .2em;
+}
+
+.pagination span {
+  margin-inline-end: auto;
+}
+
+.resultBar a {
+  margin-inline-start: auto;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.accountRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: .5rem 1.25rem;
+  padding: .8rem 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.identity {
+  display: grid;
+  gap: .2rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.identity span {
+  color: var(--muted);
+  font-size: .875rem;
+}
+
+.status {
+  justify-self: start;
+  padding: .25rem .55rem;
+  border-radius: 1rem;
+  background: #e6f4eb;
+  color: #22563b;
+  font-size: .8rem;
+  font-weight: 650;
+}
+
+.status[data-suspended="true"] {
+  background: #fce8e5;
+  color: #8d3229;
+}
+
+.manage {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .4rem;
+  min-height: 2.5rem;
+  padding: .35rem .65rem;
+  border: 1px solid var(--line);
+  border-radius: .45rem;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.manage:hover,
+.views a:hover {
+  background: var(--wash);
+}
+
+.empty {
+  margin: 0;
+  padding: 1rem;
+  color: var(--muted);
+}
+
+.workspace :is(a, button, input, select):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 760px) {
+  .filters {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .filters label:first-of-type,
+  .filters button {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 480px) {
+  .accountRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .identity {
+    grid-column: 1 / -1;
+  }
+
+  .manage {
+    justify-self: end;
+  }
+}

@@ -43,10 +43,10 @@ export default function AccountAnalysis({view,cells,listUrl,checkedAt}:{view:Cub
   <div className="sr-card ac-panel">
    <div className="sr-section-heading"><div><h2 id="cube-heading">Account Analysis</h2>
     <p>{matrix?scope+" · "+formatter.format(matrix.total)+" current account records":"Department account counts"}</p></div>
-    <Link className="sr-link" href="#account-records">Jump to accounts</Link>
    </div>
    {!cells?<p className="sr-alert" role="alert">Account counts are unavailable. Reload to try again.</p>:<>
     <AccountAnalysisForm key={JSON.stringify(view)} action={accountRoute+"#account-analysis"}>
+     <input type="hidden" name="view" value="analysis"/>
      {Array.from(accountListFields(listUrl),([name,value])=><input key={name} type="hidden" name={name} value={value}/>)}
      <div className="ac-fields ac-direct-controls">
       <label>Account group<select key={view.group} name="cubeGroup" defaultValue={view.group}>

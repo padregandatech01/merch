@@ -12,7 +12,7 @@ Apply this checklist to department and management **analytics reports**, includi
 
 ## Account Analysis
 
-**Account Analysis** lives inside Account Access at `/admin/accounts#account-analysis`. Pick any account group (users, department admins, or suppliers), date range, and grouping (year, quarter, or month) directly. Apply report filters to update the table. Choose account type(s), current suspension status, and table axes under More filters. Drill down/up in the time toolbar or click a year or quarter heading to focus on that period. Pivot without changing the scope. Dates use Asia/Manila calendar boundaries.
+**Account Analysis** is a separate view under Account Access at `/admin/accounts?view=analysis#account-analysis`. Account Access opens to Manage accounts by default. Pick any account group (users, department admins, or suppliers), date range, and grouping (year, quarter, or month) directly. Apply report filters to update the table. Choose account type(s), current suspension status, and table axes under More filters. Drill down/up in the time toolbar or click a year or quarter heading to focus on that period. Pivot without changing the scope. Dates use Asia/Manila calendar boundaries.
 
 The measure is current account count, grouped by portal registration date or department admin role assignment date. Current access status is separate from account date and is not a historical suspension snapshot. Staff sign-in status is not tracked by this report. Staff counts are aggregate-only and cannot open individual staff records. The user/supplier directory still excludes staff. A supplier record can exist before invitation setup or verification is complete.
 
