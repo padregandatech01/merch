@@ -1,12 +1,11 @@
-import SectionLinks from "@/app/admin/components/section-links";
-import Link from "next/link";
+import SectionLinks, { SupplierTabs } from "@/app/admin/components/section-links";
 import { signOut } from "@/app/actions/auth";
 import { requireAdmin } from "@/lib/auth/authorization";
 export default async function MerchandiseLayout({children}:{children:React.ReactNode}) {
  const user=await requireAdmin();
  const username=user.email?.split("@")[0]??"Staff";
  return <div className="me-app">
-   <aside className="me-app-nav"><div className="me-app-brand">LOXADA <span>MERCH</span></div><nav aria-label="Merchandise navigation"><SectionLinks items={[{href:"/admin",label:"Store overview"},{href:"/admin/accounts",label:"Account Access"},{href:"/admin/relations",label:"Supplier Invitations & Messages"},{href:"/admin/onboarding",label:"Supplier Applications"},{href:"/admin/supplier-activity",label:"Supplier Activity"}]}/></nav></aside>
-   <div className="me-app-body"><header className="me-account-head"><div className="me-account-name"><b title={user.email}>{username}</b><span>Department Admin</span></div><form action={signOut}><button type="submit">Log out</button></form></header>{children}</div>
+   <aside className="me-app-nav"><div className="me-app-brand">LOXADA <span>MERCH</span></div><nav aria-label="Merchandise navigation"><SectionLinks homeLabel="Store overview"/></nav></aside>
+   <div className="me-app-body"><header className="me-account-head"><div className="me-account-name"><b title={user.email}>{username}</b><span>Department Admin</span></div><form action={signOut}><button type="submit">Log out</button></form></header><SupplierTabs/>{children}</div>
  </div>;
 }
