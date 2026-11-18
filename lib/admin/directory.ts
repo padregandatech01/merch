@@ -35,19 +35,27 @@ export async function loadDirectory(params:Record<string,string|undefined>):Prom
  const db=createAdminClient();
  if(!db)return empty("Account management is not configured.");
  // Staff identities never appear as manageable customer/supplier accounts.
- const {data:staff,error:staffError}=await db.from("staff_roles").select("user_id");
- if(staffError)return empty("Staff permissions could not be checked.");
+ const staffIds:string[]=[];
+ const staffPage=200;
+ for(let start=0;;start+=staffPage){
+  const {data:staff,error:staffError}=await db.from("staff_roles").select("user_id").order("user_id").range(start,start+staffPage-1);
+  if(staffError||!staff)return empty("Staff permissions could not be checked.");
+  staffIds.push(...staff.map(member=>member.user_id));
+  if(staff.length<staffPage)break;
+ }
  let query=db.from("portal_accounts")
   .select("user_id,display_name,account_type,status,created_at",{count:"exact"})
-  .order("created_at",{ascending:false});
- for(const member of staff??[])query=query.neq("user_id",member.user_id);
+  .in("account_type",roles).in("status",["active","suspended"])
+  .order("created_at",{ascending:false}).order("user_id");
+ for(const id of staffIds)query=query.neq("user_id",id);
  if(q)query=query.ilike("display_name","%"+q+"%");
  if(role!=="all")query=query.eq("account_type",role);
  else if(selectedRoles.length)query=query.in("account_type",selectedRoles);
  if(bounds)query=query.gte("created_at",bounds.from).lt("created_at",bounds.to);
  if(status!=="all")query=query.eq("status",status);
  const {data,error,count}=await query.range((page-1)*PAGE_SIZE,page*PAGE_SIZE-1);
- const total=count??0;
+ if(error||count===null||!data)return empty("Account records could not be loaded.");
+ const total=count;
  return {q,role,roles:selectedRoles,period,status,page,total,pages:Math.max(1,Math.ceil(total/PAGE_SIZE)),
-  people:(data??[]) as PortalPerson[],error:error?"Account records could not be loaded.":null};
+  people:data as PortalPerson[],error:null};
 }

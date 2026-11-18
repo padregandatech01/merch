@@ -68,6 +68,20 @@ export function inlineCubeUrl(view:CubeView,listUrl=accountRoute,section:"accoun
 export const groupForRole=(role:string,customer:string)=>role===customer?"customers":role===adminRole?"admins":"suppliers";
 const inPeriod=(month:string,period:string)=>!period||month===period||month.slice(0,4)===period||toQuarter(month)===period;
 const bucketFor=(month:string,level:TimeLevel)=>level==="month"?month:level==="quarter"?toQuarter(month):month.slice(0,4);
+export function timeDrillDown(view:CubeView,member?:string):CubeView|null{
+ if(view.timeLevel==="month")return null;
+ if(member&&(!accountPeriod(member)||periodDepth(member)!==(view.timeLevel==="year"?1:2)))return null;
+ const period=member&&periodDepth(view.period)<=periodDepth(member)?member:view.period;
+ return {...view,period,timeLevel:view.timeLevel==="year"?"quarter":"month"};
+}
+export function timeDrillUp(view:CubeView):CubeView|null{
+ const level=view.timeLevel;
+ if(level==="year")return view.period?{...view,period:""}:null;
+ const depth=periodDepth(view.period);
+ const period=level==="quarter"?(depth>1?view.period.slice(0,4):""):
+  depth===3?toQuarter(view.period):depth===2?view.period.slice(0,4):view.period;
+ return {...view,period,timeLevel:level==="month"?"quarter":"year"};
+}
 export const viewRoles=(view:CubeView,allowed:readonly string[],customer:string)=>
  allowed.filter(role=>(!view.roles.length||view.roles.includes(role))&&(view.group==="all"||groupForRole(role,customer)===view.group));
 export function buildAccountMatrix(cells:AccountCell[],view:CubeView,allowed:readonly string[],customer:string){
@@ -94,7 +108,7 @@ export function buildAccountMatrix(cells:AccountCell[],view:CubeView,allowed:rea
    const first=depth===2?(Number(view.period[6])-1)*3+1:1;
    return Array.from({length:depth===2?3:12},(_,i)=>year+"-"+String(first+i).padStart(2,"0"));
   }
-  return [...new Set(cells.filter(cell=>roles.includes(cell.account_type)).map(cell=>key(axis,cell)))].sort().reverse();
+   return [...new Set(filtered.map(cell=>key(axis,cell)))].sort().reverse();
  };
  const rows=keys(view.row),columns=keys(view.col);
  const counts=new Map<string,Map<string,number>>(),rowTotals=new Map<string,number>(),columnTotals=new Map<string,number>();
@@ -116,7 +130,8 @@ export function accountDetailUrl(view:CubeView,row:string,col:string,allowed:rea
   if(axis==="status"&&(value==="active"||value==="suspended"||value==="not_tracked"))status=value;
   if(axis==="time"&&periodDepth(period)<periodDepth(value))period=value;
  };
- apply(view.row,row);apply(view.col,col);
+ if(row)apply(view.row,row);
+ if(col)apply(view.col,col);
  if(status==="active"||status==="suspended")roles=roles.filter(role=>role!==adminRole);
  if(status==="not_tracked"||roles.includes(adminRole)||!roles.length)return null;
  const portalRoles=allowed.filter(role=>role!==adminRole);

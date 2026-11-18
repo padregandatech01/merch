@@ -22,9 +22,9 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
  return <main className="store-accounts">
   <header className="store-heading"><div><span className="store-label">STORE OPERATIONS / PEOPLE</span><h1>Account Access</h1>
    <p>Find buyers, wholesale suppliers, and lead manufacturers. Manage sign-in access and password recovery.</p></div>
-   <div className="store-head-number"><strong>{d.total}</strong><span>accounts found</span></div>
+   <div className="store-head-number"><strong>{d.error?"—":d.total}</strong><span>{d.error?"count unavailable":"accounts found"}</span></div>
   </header>
-  <AccountAnalysis view={view} cells={cells} listUrl={listUrl}/>
+  <AccountAnalysis view={view} cells={cells} listUrl={listUrl} checkedAt={cells===null?null:new Date().toISOString()}/>
   <div id="account-records" tabIndex={-1}>
   {listFilters.length?<div className="ac-account-filter"><span>Account list filters: {listFilters.join(" · ")}</span>
    <Link className="sr-link" href={recordUrl({q:"",role:"all",roles:[],period:"",status:"all"},1)}>Clear list filters</Link></div>:null}
@@ -43,7 +43,7 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
      {d.period?<input type="hidden" name="period" value={d.period}/>:null}
      <label>Search customers or suppliers<input type="search" name="q" maxLength={60} defaultValue={d.q} placeholder="Enter account name"/></label>
      <label>Account access<select name="status" defaultValue={d.status}>
-      <option value="all">All accounts</option><option value="active">Can sign in</option><option value="suspended">Suspended</option>
+      <option value="all">All accounts</option><option value="active">Not suspended</option><option value="suspended">Suspended</option>
      </select></label>
      <SubmitButton label="Search" pendingLabel="Searching..."/>
     </Form>
@@ -52,7 +52,7 @@ export default async function StoreAccounts({searchParams}:{searchParams:Promise
      <tbody>{d.people.map(person=><tr key={person.user_id}>
       <td><strong>{person.display_name}</strong></td>
       <td>{roleNames[person.account_type]??person.account_type}</td>
-      <td><span className={"store-state "+(person.status==="active"?"is-active":"is-suspended")}>{person.status==="active"?"Allowed":"Suspended"}</span></td>
+      <td><span className={"store-state "+(person.status==="active"?"is-active":"is-suspended")}>{person.status==="active"?"Not suspended":"Suspended"}</span></td>
       <td>{new Date(person.created_at).toLocaleDateString("en-PH",{timeZone:"Asia/Manila"})}</td>
       <td><Link className="store-link" href={"/admin/accounts/"+person.user_id}>Manage account</Link></td>
      </tr>)}</tbody>

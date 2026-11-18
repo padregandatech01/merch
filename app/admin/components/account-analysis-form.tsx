@@ -21,9 +21,15 @@ export default function AccountAnalysisForm({action,children}:{action:string;chi
     row.value="time";
    }
   }
-  form.requestSubmit();
+  if(target instanceof HTMLSelectElement&&(target.name==="row"||target.name==="col")){
+   const other=form.elements.namedItem(target.name==="row"?"col":"row");
+   if(other instanceof HTMLSelectElement&&other.value===target.value){
+    const previous=Array.from(target.options).find(option=>option.defaultSelected)?.value;
+    other.value=previous&&previous!==target.value?previous:
+      (target.value==="account"?"time":"account");
+   }
+  }
  }}>
   {children}
-  <noscript><button type="submit">Update report</button></noscript>
  </Form>;
 }

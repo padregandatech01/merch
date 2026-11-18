@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {accountDetailUrl,accountRoles,buildAccountMatrix,inlineCubeUrl,parseCubeView,parseInlineCubeView,periodBounds,adminRole,accountListFields,manilaMonth} from "../lib/admin/account-cube-model.ts";
+import {accountDetailUrl,accountRoles,buildAccountMatrix,inlineCubeUrl,parseCubeView,parseInlineCubeView,periodBounds,adminRole,accountListFields,manilaMonth,timeDrillDown,timeDrillUp} from "../lib/admin/account-cube-model.ts";
 import {canReviewApplication,isApplicationRevision} from "../lib/admin/application-review.ts";
 const roles=["reader","creator","publisher"],customer="reader";
 const cells=[
@@ -105,4 +105,27 @@ test("staff do not contaminate user and supplier access counts or detail links",
  assert.equal(matrix.counts.get("2026-Q4").get("active"),5);
  assert.equal(accountDetailUrl(view,"2026-Q4","not_tracked",options,customer),null);
  assert.equal(accountDetailUrl(view,"2026-Q4","active",options,customer),"/admin/accounts?status=active&period=2026-Q4");
+});
+
+test("time headings focus the scope and the drill toolbar rolls back without losing filters",()=>{
+ const view=parseInlineCubeView({cubeGroup:"suppliers",cubeRoles:["publisher"],cubeStatus:"active",row:"account",col:"time"},roles);
+ const year=timeDrillDown(view,"2025");
+ const quarter=timeDrillDown(year,"2025-Q4");
+ assert.deepEqual(quarter,{...view,period:"2025-Q4",timeLevel:"month"});
+ assert.deepEqual(timeDrillUp(quarter),year);
+ assert.deepEqual(timeDrillUp(year),view);
+ assert.equal(timeDrillDown(quarter),null);
+ assert.equal(buildAccountMatrix(cells,quarter,roles,customer).total,4);
+ assert.match(inlineCubeUrl(quarter,"/admin/accounts?q=A&page=2"),/q=A&page=2/);
+});
+
+test("portal subtotals drill through, while staff and mixed grand totals do not",()=>{
+ const options=[...roles,adminRole];
+ const view=parseInlineCubeView({cubeGroup:"suppliers",cubePeriod:"2026",timeLevel:"quarter"},roles);
+ assert.equal(accountDetailUrl(view,"2026-Q4","",options,customer),"/admin/accounts?roles=creator%2Cpublisher&period=2026-Q4");
+ assert.equal(accountDetailUrl(view,"","suppliers",options,customer),"/admin/accounts?roles=creator%2Cpublisher&period=2026");
+ assert.equal(accountDetailUrl(view,"","",options,customer),"/admin/accounts?roles=creator%2Cpublisher&period=2026");
+ const mixed=parseInlineCubeView({cubePeriod:"2026"},roles);
+ assert.equal(accountDetailUrl(mixed,"","",options,customer),null);
+ assert.equal(accountDetailUrl(mixed,"","admins",options,customer),null);
 });
