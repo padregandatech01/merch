@@ -12,7 +12,6 @@ export default async function OnboardingQueue({searchParams}:{searchParams:Promi
    <div><span className="store-label">MERCHANDISE / APPLICATIONS</span>
     <h1>Supplier Applications</h1>
     <p>Review applications submitted by wholesale suppliers and lead manufacturers. Request missing information or record a verification decision.</p></div>
-   <Link className="store-link" href="/admin/relations">Supplier Invitations &amp; Messages</Link>
   </header>
   {d.error&&<p className="store-message" role="alert">{d.error}</p>}
   {p.notice&&<p className="store-message" role="status">{notices[p.notice]??""}</p>}

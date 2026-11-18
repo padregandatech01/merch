@@ -1,6 +1,6 @@
 # Loxada BI standard
 
-Apply this checklist to department and management **analytics reports**, including accounts and later product reporting. Keep analytical controls and results separate from operational forms, even when they share a screen.
+The [Loxada OLAP reporting standard](https://github.com/hilocarloarmenion03/admin/blob/main/loxada/olap-reporting.md) applies across all repositories and systems. Apply this checklist to department and management **analytics reports**, including accounts and later product reporting. Keep analytical controls and results separate from operational forms, even when they share a screen.
 
 - Start with the decision, source, fact grain, measure definitions, access rules and refresh cadence. State when a value is current, historical, or unavailable.
 - Provide a useful initial view and a multidimensional table wherever the data supports it. Use readable names, units, and local time.
@@ -12,7 +12,7 @@ Apply this checklist to department and management **analytics reports**, includi
 
 ## Account Analysis
 
-**Account Analysis** lives inside Account Access at `/admin/accounts#account-analysis`. Pick any account group (users, department admins, or suppliers), date range, and grouping (year, quarter, or month) directly. Apply report filters to update the table. Choose account type(s), current suspension status, and table axes under More filters. Drill down/up in the time toolbar or click a year or quarter heading to focus on that period. Pivot without changing the scope. Dates use Asia/Manila calendar boundaries.
+**Account Analysis** is a separate view under Account Access at `/admin/accounts?view=analysis#account-analysis`. Account Access opens to Manage accounts by default. Slice by account group, access status, or date range. Dice by combining those filters or selecting multiple specific account types. Choose year, quarter, or month directly, or use the drill controls and selectable year or quarter headings. Drill up to a broader grouping while keeping the applied date range. Pivot with the same counts and filters, or choose the dimensions from Table layout. Dates use Asia/Manila calendar boundaries.
 
 The measure is current account count, grouped by portal registration date or department admin role assignment date. Current access status is separate from account date and is not a historical suspension snapshot. Staff sign-in status is not tracked by this report. Staff counts are aggregate-only and cannot open individual staff records. The user/supplier directory still excludes staff. A supplier record can exist before invitation setup or verification is complete.
 

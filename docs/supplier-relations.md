@@ -2,8 +2,11 @@
 
 ## Department admin navigation
 
-- **Supplier Invitations & Messages** handles email invitations, responses, and private conversations.
-- **Supplier Applications** is for reviewing forms suppliers have submitted.
+Open **Suppliers** in the department navigation. It opens on **Invitations & Messages**, alongside **Applications** and **Activity**.
+
+- **Invitations & Messages** handles email invitations, responses, and private conversations.
+- **Applications** is for reviewing forms suppliers have submitted.
+- **Activity** shows invitation follow-ups, review queues, and account access counts.
 - **Account Access** is for sign-in, suspension, and password recovery.
 
 ## Workflow

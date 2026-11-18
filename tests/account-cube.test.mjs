@@ -52,6 +52,7 @@ test("account records and inline analysis retain independent URL filters",()=>{
  const target=new URL(inlineCubeUrl(changed,list),"https://example.com");
  assert.equal(target.pathname,"/admin/accounts");
  assert.equal(target.hash,"#account-analysis");
+ assert.equal(target.searchParams.get("view"),"analysis");
  assert.equal(target.searchParams.get("q"),"A&B");
  assert.equal(target.searchParams.get("page"),"2");
  assert.equal(target.searchParams.get("status"),"suspended");
@@ -59,6 +60,7 @@ test("account records and inline analysis retain independent URL filters",()=>{
  assert.deepEqual(parseInlineCubeView(Object.fromEntries(target.searchParams),roles),changed);
  const details=new URL(inlineCubeUrl(changed,accountDetailUrl(changed,"creator","2026-10",roles,customer),"account-records"),"https://example.com");
  assert.equal(details.hash,"#account-records");
+ assert.equal(details.searchParams.has("view"),false);
  assert.equal(details.searchParams.get("role"),"creator");
  assert.equal(details.searchParams.get("period"),"2026-10");
  assert.equal(details.searchParams.get("status"),"active");
@@ -111,12 +113,29 @@ test("time headings focus the scope and the drill toolbar rolls back without los
  const view=parseInlineCubeView({cubeGroup:"suppliers",cubeRoles:["publisher"],cubeStatus:"active",row:"account",col:"time"},roles);
  const year=timeDrillDown(view,"2025");
  const quarter=timeDrillDown(year,"2025-Q4");
- assert.deepEqual(quarter,{...view,period:"2025-Q4",timeLevel:"month"});
+ assert.deepEqual(quarter,{...view,focus:"2025-Q4",timeLevel:"month"});
  assert.deepEqual(timeDrillUp(quarter),year);
  assert.deepEqual(timeDrillUp(year),view);
  assert.equal(timeDrillDown(quarter),null);
  assert.equal(buildAccountMatrix(cells,quarter,roles,customer).total,4);
  assert.match(inlineCubeUrl(quarter,"/admin/accounts?q=A&page=2"),/q=A&page=2/);
+});
+
+test("drilling and pivoting retain a separately applied date slice",()=>{
+ const view=parseInlineCubeView({cubeGroup:"suppliers",cubePeriod:"2026",cubeStatus:"active"},roles);
+ const quarters=timeDrillDown(view,"2026");
+ const focused=timeDrillDown(quarters,"2026-Q4");
+ assert.equal(focused.period,"2026");
+ assert.equal(focused.focus,"2026-Q4");
+ assert.deepEqual(timeDrillUp(focused),quarters);
+ assert.deepEqual(timeDrillUp(quarters),view);
+ assert.deepEqual(timeDrillUp(timeDrillDown(quarters)),quarters);
+ const pivot={...focused,row:focused.col,col:focused.row};
+ assert.equal(buildAccountMatrix(cells,focused,roles,customer).total,buildAccountMatrix(cells,pivot,roles,customer).total);
+ assert.match(accountDetailUrl(focused,"","",roles,customer),/period=2026-Q4$/);
+ assert.equal(parseInlineCubeView({cubePeriod:"2026",cubeFocus:"2025-Q4"},roles).focus,"");
+ const url=new URL(inlineCubeUrl(focused),"https://example.com");
+ assert.deepEqual(parseInlineCubeView(Object.fromEntries(url.searchParams),roles),focused);
 });
 
 test("portal subtotals drill through, while staff and mixed grand totals do not",()=>{
