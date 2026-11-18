@@ -2,7 +2,7 @@ import Link from "next/link";
 import AccountAnalysisForm from "./account-analysis-form";
 import SubmitButton from "./submit-button";
 import {accountLabels,customerType,departmentId,supplierTypes} from "@/lib/portal/config";
-import {accountDetailUrl,accountGroups,adminRole,accountListFields,accountRoute,axes,buildAccountMatrix,inlineCubeUrl,parseCubeView,groupForRole,manilaMonth,periodDepth,timeDrillDown,timeDrillUp,timeLevels,type AccountCell,type Axis,type CubeView} from "@/lib/admin/account-cube-model";
+import {accountDetailUrl,accountGroups,adminRole,accountListFields,accountRoute,axes,buildAccountMatrix,inlineCubeUrl,parseCubeView,manilaMonth,periodDepth,timeDrillDown,timeDrillUp,timeLevels,type AccountCell,type Axis,type CubeView} from "@/lib/admin/account-cube-model";
 
 const roles=[customerType,adminRole,...supplierTypes];
 const roleLabel=(role:string)=>role===adminRole?"Department admin":accountLabels[role]??role;
@@ -21,7 +21,7 @@ export default function AccountAnalysis({view,cells,listUrl,checkedAt}:{view:Cub
  const rowLabelForView=(axis:Axis)=>axis==="account"?(view.accountLevel==="group"?"Account group":"Account type"):axis==="time"?"By "+view.timeLevel:"Access status";
  const matrix=cells?buildAccountMatrix(cells,view,roles,customerType):null;
  const year=Number(manilaMonth(new Date()).slice(0,4));
- const scopeYear=view.period.slice(0,4)||String(year);
+ const scopeYear=(view.period||view.focus).slice(0,4)||String(year);
  const quarters=Array.from({length:4},(_,i)=>scopeYear+"-Q"+(i+1));
  const scopeMonths=Array.from({length:12},(_,i)=>scopeYear+"-"+String(i+1).padStart(2,"0"));
  const otherYears=[...new Set([...(cells??[]).map(cell=>Number(cell.month.slice(0,4))),Number(scopeYear)])]
@@ -37,16 +37,22 @@ export default function AccountAnalysis({view,cells,listUrl,checkedAt}:{view:Cub
   return detail?<Link className="sr-link" prefetch={false} href={inlineCubeUrl(view,detail,"account-records")} aria-label={label+". Open matching accounts."}>{formatter.format(count)}</Link>:formatter.format(count);
  };
  const rowLabel=rowLabelForView(view.row),colLabel=rowLabelForView(view.col);
- const scope=accountGroups.find(([key])=>key===view.group)?.[1];
- const isAdvanced=!!(view.roles.length||view.status||view.accountLevel!=="group"||view.row!=="time"||view.col!=="account");
+ const scope=[
+  accountGroups.find(([key])=>key===view.group)?.[1],
+  view.period?labelTime(view.period):"All dates",
+  view.status?accessLabels[view.status]:null,
+  view.roles.length?view.roles.map(roleLabel).join(", "):null,
+ ].filter(Boolean).join(" · ");
+ const hasCustomLayout=view.accountLevel!=="group"||!((view.row==="time"&&view.col==="account")||(view.row==="account"&&view.col==="time"));
  return <section id="account-analysis" tabIndex={-1} className="sr-shell ac-inline" data-dept={departmentId} aria-labelledby="cube-heading">
   <div className="sr-card ac-panel">
    <div className="sr-section-heading"><div><h2 id="cube-heading">Account Analysis</h2>
-    <p>{matrix?scope+" · "+formatter.format(matrix.total)+" current account records":"Department account counts"}</p></div>
+    <p>{matrix?formatter.format(matrix.total)+" current account records":"Department account counts"}</p></div>
    </div>
    {!cells?<p className="sr-alert" role="alert">Account counts are unavailable. Reload to try again.</p>:<>
     <AccountAnalysisForm key={JSON.stringify(view)} action={accountRoute+"#account-analysis"}>
      <input type="hidden" name="view" value="analysis"/>
+     <input type="hidden" name="cubeFocus" value={view.focus}/>
      {Array.from(accountListFields(listUrl),([name,value])=><input key={name} type="hidden" name={name} value={value}/>)}
      <div className="ac-fields ac-direct-controls">
       <label>Account group<select key={view.group} name="cubeGroup" defaultValue={view.group}>
@@ -58,46 +64,51 @@ export default function AccountAnalysis({view,cells,listUrl,checkedAt}:{view:Cub
        <optgroup label={scopeYear+" quarters"}>{quarters.map(value=><option key={value} value={value}>{labelTime(value)}</option>)}</optgroup>
        <optgroup label={scopeYear+" months"}>{scopeMonths.map(value=><option key={value} value={value}>{labelTime(value)}</option>)}</optgroup>
       </select></label>
-      <label>Group dates by<select key={view.timeLevel} name="timeLevel" defaultValue={view.timeLevel}>
+      <label>Access status<select name="cubeStatus" defaultValue={view.status}>
+       <option value="">All statuses</option>
+       <option value="active">Not suspended</option>
+       <option value="suspended">Suspended</option>
+       <option value="not_tracked">Not tracked (staff)</option>
+      </select></label>
+      <label>Group dates by<select name="timeLevel" defaultValue={view.timeLevel}>
        {timeLevels.map(([key,label])=><option key={key} value={key}>{label}</option>)}
       </select></label>
      </div>
-     <details className="ac-filter-panel" open={isAdvanced||undefined}>
-      <summary>More filters and table layout</summary>
-      <div className="ac-extra-controls">
-       <div className="ac-fields">
-        <label>Access status<select key={view.status} name="cubeStatus" defaultValue={view.status}>
-         <option value="">All statuses</option>
-         <option value="active">Not suspended</option><option value="suspended">Suspended</option>
-         <option value="not_tracked">Not tracked (staff)</option>
-        </select></label>
-        <label>Account breakdown<select key={view.accountLevel} name="accountLevel" defaultValue={view.accountLevel}>
-         <option value="group">By account group</option><option value="type">By specific account type</option>
-        </select></label>
-        <label>Rows<select key={view.row} name="row" defaultValue={view.row}>
-         {axes.map(([key,label])=><option key={key} value={key}>{label}</option>)}
-        </select></label>
-        <label>Columns<select key={view.col} name="col" defaultValue={view.col}>
-         {axes.map(([key,label])=><option key={key} value={key}>{label}</option>)}
-        </select></label>
+     <details className="ac-filter-panel" open={view.roles.length>0||undefined}>
+      <summary>Filter by specific account types</summary>
+      <fieldset className="ac-extra-controls">
+       <legend>Account types</legend>
+       <div className="ac-types">
+        {roles.map(role=><label key={role}>
+         <input type="checkbox" name="cubeRoles" value={role} defaultChecked={view.roles.includes(role)}/>{roleLabel(role)}
+        </label>)}
        </div>
-       <fieldset><legend>Include specific account types</legend>
-        <div className="ac-types">
-         {roles.filter(role=>view.group==="all"||groupForRole(role,customerType)===view.group).map(role=><label key={role+view.roles.includes(role)}>
-          <input type="checkbox" name="cubeRoles" value={role} defaultChecked={view.roles.includes(role)}/>{roleLabel(role)}
-         </label>)}
-        </div>
-        <p className="sr-note">Leave unchecked to include every type in the selected group.</p>
-       </fieldset>
+       <p className="sr-note">Selected types must match the account group. Leave unchecked to include all types in that group.</p>
+      </fieldset>
+     </details>
+     <details className="ac-filter-panel" open={hasCustomLayout||undefined}>
+      <summary>Table layout</summary>
+      <div className="ac-fields ac-extra-controls">
+       <label>Account breakdown<select name="accountLevel" defaultValue={view.accountLevel}>
+        <option value="group">By account group</option><option value="type">By specific account type</option>
+       </select></label>
+       <label>Rows<select name="row" defaultValue={view.row}>
+        {axes.map(([key,label])=><option key={key} value={key}>{label}</option>)}
+       </select></label>
+       <label>Columns<select name="col" defaultValue={view.col}>
+        {axes.map(([key,label])=><option key={key} value={key}>{label}</option>)}
+       </select></label>
       </div>
      </details>
      <div className="ac-report-actions"><SubmitButton label="Apply report filters" pendingLabel="Updating report…"/></div>
     </AccountAnalysisForm>
+    <p className="sr-note"><strong>Applied filters</strong> · {scope}{view.focus?" · Drilled into "+labelTime(view.focus):""}</p>
     <nav className="ac-drills ac-time-nav" aria-label="Account analysis controls">
-     {hasTime?<span>{view.period?labelTime(view.period):"All dates"} · By {view.timeLevel}</span>:null}
-     {hasTime&&up?<Link className="ac-control" prefetch={false} href={cubeHref(up)}>↑ Drill up</Link>:null}
+     {hasTime?<span>By {view.timeLevel}</span>:null}
+     {hasTime&&up&&view.timeLevel!=="year"?<Link className="ac-control" prefetch={false} href={cubeHref(up)}>↑ Drill up to {up.timeLevel==="year"?"years":"quarters"}</Link>:null}
      {hasTime&&down?<Link className="ac-control" prefetch={false} href={cubeHref(down)}>↓ Drill down to {down.timeLevel==="quarter"?"quarters":"months"}</Link>:null}
-     <Link className="ac-control" prefetch={false} href={cubeHref({...view,row:view.col,col:view.row})}>Swap rows and columns</Link>
+     {view.focus?<Link className="sr-link" prefetch={false} href={cubeHref({...view,focus:""})}>Clear drill focus</Link>:null}
+     <Link className="ac-control" prefetch={false} href={cubeHref({...view,row:view.col,col:view.row})}>Pivot rows and columns</Link>
      <Link className="sr-link" prefetch={false} href={cubeHref(parseCubeView({},roles))}>Reset report</Link>
     </nav>
     {matrix&&matrix.rows.length&&matrix.columns.length?<div className="sa-table-wrap"><table className="sa-table ac-table" aria-label={rowLabel+" by "+colLabel}>
