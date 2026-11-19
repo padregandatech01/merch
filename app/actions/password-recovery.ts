@@ -3,17 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { hasRecoverySession, isRecoveryConfigured, recoveryCookie, recoveryCookieOptions } from "@/lib/auth/password-recovery";
-
-function recoveryRedirect() {
-  try {
-    const url = new URL(process.env.APP_ORIGIN ?? "https://merch-three-fawn.vercel.app");
-    const local = url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname);
-    return url.protocol === "https:" || local ? new URL("/", url).href : null;
-  } catch {
-    return null;
-  }
-}
+import { hasRecoverySession, isRecoveryConfigured, recoveryCookie, recoveryCookieOptions, recoverySite, sendRecoveryLink } from "@/lib/auth/password-recovery";
 
 export async function requestPasswordRecovery(form: FormData) {
   const value = form.get("email");
@@ -21,13 +11,12 @@ export async function requestPasswordRecovery(form: FormData) {
   if (email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     redirect("/forgot-password?error=email");
   }
-  const redirectTo = recoveryRedirect();
+  const redirectTo = recoverySite();
   if (!isRecoveryConfigured() || !redirectTo) redirect("/forgot-password?error=unavailable");
 
-  const db = await createClient();
   try {
-    const { error } = await db.auth.resetPasswordForEmail(email, { redirectTo });
-    if (error) console.warn("password_recovery_request_failed", { code: error.code, status: error.status });
+    const response = await sendRecoveryLink(email, redirectTo);
+    if (!response.ok) console.warn("password_recovery_request_failed", { status: response.status });
   } catch {
     console.warn("password_recovery_request_failed");
   }
