@@ -10,7 +10,7 @@ export default async function ForgotPasswordPage({ searchParams }: {
   const { error, notice } = await searchParams;
   const sent = notice === "sent";
   const message = error === "email" ? "Enter a valid email address."
-    : error === "invalid-link" ? "This reset link is invalid or expired. Request a new link and open it in the same browser."
+    : error === "invalid-link" ? "This reset link is invalid or expired. Request a new link."
     : error === "unavailable" ? "Password reset is temporarily unavailable." : null;
 
   return (
@@ -18,7 +18,7 @@ export default async function ForgotPasswordPage({ searchParams }: {
       <h1>Forgot password?</h1>
       {message ? <p className="me-alert" role="alert">{message}</p> : null}
       {sent ? (
-        <p role="status">If an account uses that email, you’ll receive a reset link. Open it in this browser.</p>
+        <p role="status">If an account uses that email, you’ll receive a reset link. Open it on the device where you want to reset your password.</p>
       ) : (
         <form action={requestPasswordRecovery}>
           <label htmlFor="recovery-email">Sign-in email</label>
