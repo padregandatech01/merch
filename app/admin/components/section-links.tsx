@@ -8,6 +8,7 @@ import styles from "./supplier-tabs.module.css";
 const supplierViews = [
   { href: "/admin/relations", label: "Invitations & Messages" },
   { href: "/admin/onboarding", label: "Applications" },
+  { href: "/admin/supply-work", label: "Supply submissions" },
   { href: "/admin/supplier-activity", label: "Activity" },
 ] as const;
 
